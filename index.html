@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Uppetit, Московский пр., 38 — вид витрин с улицы</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E9EDF1; --panel:#F7F8FA; --ink:#1A2836; --muted:#5F6B78; --line:#CBD3DB;
+  --blue:#2457A6; --yellow:#E2B32A; --soft:#DDE4EB;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#141B23; --panel:#1C252F; --ink:#E6ECF2; --muted:#9AA7B4; --line:#2E3B48;
+    --blue:#6C9BE6; --yellow:#E8BE45; --soft:#24303C;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141B23; --panel:#1C252F; --ink:#E6ECF2; --muted:#9AA7B4; --line:#2E3B48;
+  --blue:#6C9BE6; --yellow:#E8BE45; --soft:#24303C;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:15px;line-height:1.5}
+header{padding:20px 24px 12px;display:flex;flex-wrap:wrap;gap:12px 28px;align-items:flex-end;justify-content:space-between}
+h1{margin:0;font-size:24px;line-height:1.2;font-weight:700;letter-spacing:-.01em}
+h1 .num{display:inline-block;background:var(--blue);color:#fff;border-radius:999px;padding:0 12px;margin-left:8px;font-size:20px;line-height:30px;vertical-align:2px}
+.sub{margin:4px 0 0;color:var(--muted);max-width:68ch}
+.tabs{display:flex;gap:4px;background:var(--soft);padding:4px;border-radius:10px}
+.tabs button{border:0;background:transparent;color:var(--ink);font:inherit;font-weight:500;padding:8px 14px;border-radius:7px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--panel);box-shadow:0 1px 0 var(--line)}
+button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+main{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;padding:0 24px 24px}
+@media (max-width:900px){main{grid-template-columns:1fr;padding:0 12px 16px}header{padding:16px 12px 10px}}
+.stage{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;min-height:420px}
+.view{display:none}
+.view.on{display:block}
+#v3d{position:relative;height:min(72vh,720px);min-height:420px}
+#v3d canvas{display:block;width:100%;height:100%;touch-action:none}
+.presets{position:absolute;left:10px;top:10px;right:10px;display:flex;flex-wrap:wrap;gap:6px;pointer-events:none}
+.presets button{pointer-events:auto;border:1px solid rgba(0,0,0,.12);background:rgba(255,255,255,.88);color:#1A2836;font:inherit;font-size:13px;padding:5px 10px;border-radius:999px;cursor:pointer;backdrop-filter:blur(4px)}
+.presets button.on{background:#2457A6;color:#fff;border-color:#2457A6}
+.hint{position:absolute;left:10px;bottom:10px;font-size:12px;color:#1A2836;background:rgba(255,255,255,.8);padding:4px 8px;border-radius:6px}
+.toggle{position:absolute;right:10px;bottom:10px;font-size:13px;background:rgba(255,255,255,.9);color:#1A2836;padding:4px 10px;border-radius:6px;display:flex;gap:6px;align-items:center}
+#vphoto{padding:14px}
+#vphoto canvas{width:100%;height:auto;display:block;border-radius:8px}
+.row{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin-top:10px;font-size:14px;color:var(--muted)}
+.row button{border:1px solid var(--line);background:var(--panel);color:var(--ink);font:inherit;padding:6px 12px;border-radius:8px;cursor:pointer}
+#vplan{padding:12px 14px}
+#vplan svg{display:block;width:100%;height:auto;max-height:78vh;margin:6px auto;touch-action:none;user-select:none}
+.tools{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0}
+.tools button,.tools select{border:1px solid var(--line);background:var(--panel);color:var(--ink);font:inherit;font-size:14px;padding:6px 11px;border-radius:8px;cursor:pointer}
+.tools button:disabled{opacity:.45;cursor:default}
+.tools select{max-width:100%}
+.sel{font-weight:600}
+.muted{color:var(--muted)}.small{font-size:13px;margin:6px 0 0}
+.stage.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}
+.stage.split #v3d{height:min(78vh,760px);position:sticky;top:0;border-left:1px solid var(--line)}
+main.wide{grid-template-columns:1fr}
+main.wide aside{display:none}
+@media (max-width:900px){.stage.split{grid-template-columns:1fr}.stage.split #v3d{height:60vh;position:relative;border-left:0;border-top:1px solid var(--line)}}
+aside{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;align-self:start}
+aside h2{font-size:16px;margin:0 0 8px;font-weight:600}
+aside p{margin:0 0 12px;color:var(--muted);font-size:14px}
+ol.leg{list-style:none;margin:0;padding:0}
+ol.leg li{display:grid;grid-template-columns:26px 1fr;gap:8px;padding:6px 0;border-top:1px solid var(--line);font-size:14px;line-height:1.35}
+ol.leg li b{display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--yellow);color:#1A2836;font-size:12px;align-items:center;justify-content:center;font-weight:700}
+ol.leg small{display:block;color:var(--muted);font-size:12.5px}
+.note{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+#vcat{padding:14px 16px 20px}
+#vcat .intro{margin:0 0 6px;color:var(--muted);font-size:14px;max-width:80ch}
+#vcat h3{font-size:16px;font-weight:600;margin:18px 0 8px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.card{border:1px solid var(--line);border-radius:10px;background:var(--bg);overflow:hidden;display:flex;flex-direction:column}
+.card .pic{width:100%;aspect-ratio:4/3;background:#EEF1F4;display:block;object-fit:contain}
+.card .b{padding:10px 12px 12px;display:flex;flex-direction:column;gap:3px;flex:1}
+.card .nm{font-weight:600;line-height:1.3;display:flex;gap:8px;align-items:flex-start}
+.card .nm i{font-style:normal;flex:none;display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--yellow);color:#1A2836;font-size:12px;align-items:center;justify-content:center;font-weight:700}
+.card .meta{font-size:13px;color:var(--muted)}
+.card .cnt{font-size:13px;margin-top:auto;padding-top:6px}
+.card button{margin-top:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font:inherit;font-size:14px;padding:6px 11px;border-radius:8px;cursor:pointer}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Uppetit, Московский проспект<span class="num">38</span></h1>
+    <p class="sub">Как торговый зал по чертежу будет выглядеть через два окна на первом этаже. Объёмная модель собрана по размерам с плана; оформление — в духе Uppetit: светлое дерево, серое оборудование, цветные зоны (зелёный — салаты, оранжевый — супы, жёлтый — основное, розовый — десерты). Высоты мебели примерные.</p>
+  </div>
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-v="street">С улицы в 3D</button>
+    <button role="tab" aria-selected="false" data-v="edit">Расстановка</button>
+    <button role="tab" aria-selected="false" data-v="cat">База элементов</button>
+    
+  </div>
+</header>
+<main>
+  <div class="stage">
+    <section id="vphoto" class="view">
+      <canvas id="mont" width="1140" height="630"></canvas>
+      <div class="row">
+        <button id="ba">Показать как сейчас</button>
+        <label>Отражение в стекле <input type="range" id="refl" min="0" max="70" value="15"></label>
+      </div>
+      <p class="row" style="margin-top:6px">Интерьер вставлен в стекло реального снимка с той же точки съёмки. Снимок с панорамы мелкий, поэтому картинка мягкая — это эскиз, а не фотография.</p>
+    </section>
+    <section id="vcat" class="view">
+      <p class="intro">Всё, что можно поставить в зал. Одинаковые вещи — одна модель: холодильники одного вида, столы и стулья одного вида. Набор собран по чертежу и по тому, как устроены кафе Uppetit: холодильники с готовой едой по цветным зонам, выкладка снеков, кофе, разогрев, посадка. Размеры — по чертежу, где их нет — типовые.</p>
+      <div id="catbox"></div>
+    </section>
+    <section id="vplan" class="view">
+      <div class="tools"><span class="sel" id="selName"></span></div>
+      <div class="tools">
+        <button id="bCopy">Копировать</button><button id="bRot">Повернуть на 90°</button><button id="bRot15">на 15°</button><button id="bZone" hidden>Сменить цвет полок</button><button id="bDel">Удалить</button>
+      </div>
+      <div id="planbox"></div><p class="muted small" style="margin:0">Вид сверху: улица внизу, лево и право — как у прохожего.</p>
+      <div class="tools">
+        <select id="addType" aria-label="Что добавить"></select><button id="bAdd">Добавить в зал</button>
+      </div>
+      <div class="tools">
+        <button id="bUndo" disabled>Отменить</button><button id="bReset">Вернуть как на чертеже</button><span id="saveState" class="muted"></span>
+      </div>
+      <p class="muted small">Перетаскивайте предметы мышью или пальцем. Жирная сторона — лицевая: дверцы холодильника, сторона покупателя у стойки. Выбранный предмет можно двигать стрелками на клавиатуре (с Shift — шагом 25 см). Предмет, поставленный в оконный проём, встаёт на подоконник.</p>
+    </section>
+    <section id="v3d" class="view on">
+      <div class="presets" id="presets"></div>
+      <div class="hint">Тяните мышью или пальцем, колесо — ближе/дальше</div>
+      <label class="toggle"><input type="checkbox" id="lbl" checked> Номера</label>
+    </section>
+  </div>
+  <aside>
+    <h2>Что стоит в зале</h2>
+    <p>Номера совпадают с метками в 3D и на схеме и с карточками во вкладке «База элементов». Двигать, копировать и удалять — на вкладке «Расстановка».</p>
+    <ol class="leg" id="leg"></ol>
+    <div class="note">Как читалась схема: окна на чертеже — голубая линия, улица со стороны этой стены. Вход с улицы — левее окон, через тамбур и дверь в левой стене зала. Высоты окон, мебели и потолка взяты типовые — на плане их нет.</div>
+  </aside>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function(){
+/* ===== Данные с чертежа (метры). lat — вдоль фасада слева направо, d — вглубь от внутренней стены фасада ===== */
+var ROOM={w:4.68,depth:11.06,h:3.4,wall:0.775};
+var WIN=[{a:0.86,b:2.21},{a:3.08,b:4.68}], SILL=0.55, TOP=2.15, GLZ=0.66;
+var leg=document.getElementById('leg');
+
+/* ===== Табы ===== */
+var tabs=document.querySelectorAll('.tabs button'),stageEl=document.querySelector('.stage'),mainEl=document.querySelector('main');
+function showTab(v){tabs.forEach(function(x){x.setAttribute('aria-selected',x.dataset.v===v?'true':'false');});
+  document.getElementById('v3d').classList.toggle('on',v==='street'||v==='edit');document.getElementById('vplan').classList.toggle('on',v==='edit');document.getElementById('vphoto').classList.toggle('on',v==='photo');document.getElementById('vcat').classList.toggle('on',v==='cat');
+  stageEl.classList.toggle('split',v==='edit');mainEl.classList.toggle('wide',v==='edit'||v==='cat');
+  if((v==='street'||v==='edit')&&window.resize)setTimeout(resize,0);if(v==='photo')drawMontage();if(v==='cat')buildCatalog();}
+tabs.forEach(function(t){t.addEventListener('click',function(){showTab(t.dataset.v);});});
+if(!window.THREE){document.getElementById('v3d').innerHTML='<p style="padding:20px">Не загрузилась 3D-библиотека. Обновите страницу.</p>';}
+var T=THREE;
+
+/* ===== Текстуры ===== */
+function canvasTex(w,h,draw,rx,ry){var c=document.createElement('canvas');c.width=w;c.height=h;draw(c.getContext('2d'),w,h);var t=new T.CanvasTexture(c);t.wrapS=t.wrapT=T.RepeatWrapping;if(rx)t.repeat.set(rx,ry);t.encoding=T.sRGBEncoding;t.anisotropy=4;return t;}
+var plasterTex=canvasTex(512,512,function(g,w,h){g.fillStyle='#E9DDB6';g.fillRect(0,0,w,h);for(var i=0;i<4000;i++){g.fillStyle='rgba(120,100,60,'+(Math.random()*0.05)+')';g.fillRect(Math.random()*w,Math.random()*h,2,2);}g.strokeStyle='rgba(150,130,90,.55)';g.lineWidth=2;for(var y=0;y<h;y+=h/11){g.beginPath();g.moveTo(0,y);g.lineTo(w,y);g.stroke();}},1/4,1/4);
+var paveTex=canvasTex(256,256,function(g,w,h){g.fillStyle='#9A938C';g.fillRect(0,0,w,h);for(var i=0;i<3000;i++){g.fillStyle='rgba(60,50,45,'+(Math.random()*0.15)+')';g.fillRect(Math.random()*w,Math.random()*h,2,2);}g.strokeStyle='rgba(70,60,55,.5)';g.lineWidth=2;g.strokeRect(0,0,w,h);g.beginPath();g.moveTo(w/2,0);g.lineTo(w/2,h);g.moveTo(0,h/2);g.lineTo(w,h/2);g.stroke();},1/1.2,1/1.2);
+var floorTex=canvasTex(256,256,function(g,w,h){g.fillStyle='#BFC2C4';g.fillRect(0,0,w,h);g.strokeStyle='rgba(90,95,100,.3)';g.lineWidth=2;g.strokeRect(0,0,w,h);g.beginPath();g.moveTo(w/2,0);g.lineTo(w/2,h);g.moveTo(0,h/2);g.lineTo(w,h/2);g.stroke();},1/1.2,1/1.2);
+
+/* ===== Сцена ===== */
+var host=document.getElementById('v3d');
+var renderer=new T.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+renderer.outputEncoding=T.sRGBEncoding;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=0.95;
+host.insertBefore(renderer.domElement,host.firstChild);
+var scene=new T.Scene();
+scene.background=new T.Color('#C9D8E4');
+var camera=new T.PerspectiveCamera(55,1,0.05,200);
+var controls=new T.OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true;controls.maxPolarAngle=Math.PI*0.495;
+
+scene.add(new T.HemisphereLight('#E8F0F8','#857C70',0.6));
+var sun=new T.DirectionalLight('#FFF4E2',0.55);sun.position.set(-6,10,8);scene.add(sun);
+
+function M(c,o){o=o||{};o.color=c;if(o.rough===undefined)o.roughness=0.8;else{o.roughness=o.rough;delete o.rough;}return new T.MeshStandardMaterial(o);}
+var mat={
+  wallIn:M('#F1ECE3'),glass:new T.MeshStandardMaterial({color:'#D8ECF6',transparent:true,opacity:0.18,roughness:0.05,metalness:0.1,depthWrite:false}),
+  showGlass:new T.MeshStandardMaterial({color:'#E6F4FA',transparent:true,opacity:0.22,roughness:0.05,depthWrite:false}),
+  white:M('#F4F4F2'),steel:M('#A9B1B7',{metalness:0.5,rough:0.35}),dark:M('#2B2F33'),wood:M('#8A5A3B'),woodL:M('#B78A5E'),
+  top:M('#E6E2DA'),frame:M('#F3F2EE'),black:M('#1C1F22'),blueTrim:M('#2457A6')
+};
+var labels=[];
+var interior=null;
+function box(x0,x1,y0,y1,d0,d1,m,parent){var g=new T.BoxGeometry(Math.abs(x1-x0),Math.abs(y1-y0),Math.abs(d1-d0));var me=new T.Mesh(g,m);me.position.set((x0+x1)/2,(y0+y1)/2,-(d0+d1)/2);(parent||interior||scene).add(me);return me;}
+function label(n,x,y,d){var c=document.createElement('canvas');c.width=c.height=96;var g=c.getContext('2d');g.fillStyle='#E2B32A';g.beginPath();g.arc(48,48,42,0,7);g.fill();g.lineWidth=5;g.strokeStyle='#1A2836';g.stroke();g.fillStyle='#1A2836';g.font='bold 46px Arial';g.textAlign='center';g.textBaseline='middle';g.fillText(n,48,51);var t=new T.CanvasTexture(c);var s=new T.Sprite(new T.SpriteMaterial({map:t,depthTest:true,sizeAttenuation:false}));s.scale.set(0.045,0.045,1);s.position.set(ROOM.w-x,y,-d);s.renderOrder=10;scene.add(s);labels.push(s);}
+var seed=7;function rnd(){seed=(seed*16807)%2147483647;return seed/2147483647;}
+var prodCols=['#E2B32A','#C0392B','#2E86C1','#27AE60','#F39C12','#8E44AD','#ECF0F1','#D35400','#16A085'];
+function prod(){return M(prodCols[Math.floor(rnd()*prodCols.length)],{rough:0.5});}
+
+/* ===== Интерьер в координатах «как видит прохожий»: x — слева направо от левой стены зала, d — вглубь от фасада ===== */
+var ZONE={green:'#4CAF50',orange:'#F08A24',yellow:'#F2C014',pink:'#EE6FA0'};
+var woodLight=M('#D9BC8E',{rough:0.7}),greyTop=M('#7D858C',{rough:0.5}),greyLight=M('#CDD1D4',{rough:0.55}),graph=M('#3B4045',{rough:0.6});
+var packWhite=M('#FAFAF7',{rough:0.6});
+var zoneMat={};Object.keys(ZONE).forEach(function(k){zoneMat[k]=M(ZONE[k]);});
+/* --- архитектура (неподвижная) --- */
+var fl=new T.Mesh(new T.PlaneGeometry(ROOM.w,14),M('#ffffff',{map:floorTex}));fl.rotation.x=-Math.PI/2;fl.position.set(ROOM.w/2,0.001,-7);scene.add(fl);
+floorTex.repeat.set(ROOM.w/1.2,14/1.2);
+var ceil=new T.Mesh(new T.PlaneGeometry(ROOM.w,14),M('#6C7277'));ceil.rotation.x=Math.PI/2;ceil.position.set(ROOM.w/2,ROOM.h,-7);scene.add(ceil);
+function wallPlane(w,h,x,y,z,ry){var p=new T.Mesh(new T.PlaneGeometry(w,h),mat.wallIn);p.position.set(x,y,z);p.rotation.y=ry;scene.add(p);return p;}
+var H=ROOM.h;
+// левая стена (дверь из тамбура d 1.05–1.87)
+wallPlane(1.05,H,0,H/2,-0.525,Math.PI/2);wallPlane(0.82,H-2.1,0,2.1+(H-2.1)/2,-1.46,Math.PI/2);wallPlane(ROOM.depth-1.87,H,0,H/2,-(1.87+ROOM.depth)/2,Math.PI/2);
+// правая стена (дверь d 9.1–10.1)
+wallPlane(9.1,H,ROOM.w,H/2,-4.55,-Math.PI/2);wallPlane(1.0,H-2.1,ROOM.w,2.1+(H-2.1)/2,-9.6,-Math.PI/2);wallPlane(3.0,H,ROOM.w,H/2,-11.6,-Math.PI/2);
+box(ROOM.w,ROOM.w+0.05,0,2.1,9.12,10.08,M('#6E7A84'));
+// задние стены и коридор к подсобкам
+wallPlane(3.08,H,1.54,H/2,-ROOM.depth,0);wallPlane(1.6,H,3.88,H/2,-13,0);box(3.06,3.08,0,H,ROOM.depth,13,mat.wallIn);
+// колонна, выступ стены, техшкаф
+box(1.905,3.315,0,H,5.32,6.32,mat.wallIn);box(0,0.63,0,H,5.32,6.32,mat.wallIn);box(0.07,0.72,0,2.0,4.64,5.30,M('#C9CED2'));
+// свет
+[[3.58,-1.2],[1.68,-2.5],[2.38,-4.0],[1.48,-7.5],[2.68,-9.5],[1.08,-10]].forEach(function(p){var l=new T.PointLight('#FFE3B8',0.3,8);l.position.set(p[0],H-0.3,p[1]);scene.add(l);var disc=new T.Mesh(new T.CircleGeometry(0.18,24),new T.MeshBasicMaterial({color:'#FFF6E0'}));disc.rotation.x=Math.PI/2;disc.position.set(p[0],H-0.005,p[1]);scene.add(disc);});
+[[4.23,-1.0],[4.23,-1.7],[2.53,-1.4],[2.53,-2.3]].forEach(function(p){var s=new T.Mesh(new T.CylinderGeometry(0.02,0.14,0.18,20,1,true),M('#2B2F33',{side:T.DoubleSide}));s.position.set(p[0],2.55,p[1]);scene.add(s);var b=new T.Mesh(new T.SphereGeometry(0.05,12,8),new T.MeshBasicMaterial({color:'#FFE9B0'}));b.position.set(p[0],2.48,p[1]);scene.add(b);var w=new T.Mesh(new T.CylinderGeometry(0.004,0.004,H-2.64,4),mat.black);w.position.set(p[0],(H+2.64)/2,p[1]);scene.add(w);});
+// меню на правой стене, рейки, постеры, батареи
+var menuTex=canvasTex(512,192,function(g,w,h){g.fillStyle='#3B4045';g.fillRect(0,0,w,h);g.fillStyle='#fff';g.font='bold 30px Arial';g.fillText('Кофе',24,44);g.fillText('Чай',190,44);g.fillText('Какао и матча',320,44);
+  g.fillStyle='rgba(255,255,255,.55)';for(var c=0;c<3;c++)for(var r=0;r<4;r++){g.fillRect(24+c*160+(c==2?-30:0),70+r*28,100,6);}
+  [ZONE.green,ZONE.orange,ZONE.yellow,ZONE.pink].forEach(function(c,i){g.fillStyle=c;g.fillRect(i*w/4,h-10,w/4,10);});});
+menuTex.wrapS=menuTex.wrapT=T.ClampToEdgeWrapping;
+var mb=new T.Mesh(new T.PlaneGeometry(1.9,0.7),new T.MeshBasicMaterial({map:menuTex}));mb.position.set(ROOM.w-0.02,2.35,-1.0);mb.rotation.y=-Math.PI/2;scene.add(mb);
+for(var k=0;k<26;k++){box(ROOM.w-0.035,ROOM.w,0.94,H,2.1+k*0.075,2.14+k*0.075,woodLight);}
+function poster(x,y,z,ry,col){var p=new T.Mesh(new T.PlaneGeometry(0.6,0.85),new T.MeshBasicMaterial({map:canvasTex(120,170,function(g,w,h){g.fillStyle='#fff';g.fillRect(0,0,w,h);g.fillStyle='#E9E4DA';g.beginPath();g.ellipse(w/2,h*0.45,46,38,0,0,7);g.fill();g.fillStyle=col;g.beginPath();g.ellipse(w/2,h*0.45,38,30,0,0,7);g.fill();g.fillRect(14,h-28,w-28,10);})}));p.position.set(x,y,z);p.rotation.y=ry;scene.add(p);}
+poster(ROOM.w-0.01,1.7,-8.2,-Math.PI/2,ZONE.orange);poster(ROOM.w-0.01,1.7,-7.4,-Math.PI/2,ZONE.green);poster(2.28,1.8,-ROOM.depth+0.01,0,ZONE.yellow);poster(1.48,1.8,-ROOM.depth+0.01,0,ZONE.pink);
+box(3.45,4.27,0.1,0.6,0,0.12,mat.white);box(1.11,1.905,0.1,0.6,0,0.12,mat.white);
+
+/* --- оборудование: каждый предмет строится вокруг своего центра, лицом к улице (+z) --- */
+function B(g,x0,x1,y0,y1,z0,z1,m){var me=new T.Mesh(new T.BoxGeometry(Math.max(0.001,x1-x0),Math.max(0.001,y1-y0),Math.max(0.001,z1-z0)),m);me.position.set((x0+x1)/2,(y0+y1)/2,(z0+z1)/2);g.add(me);return me;}
+function C(g,rt,rb,h,x,y,z,m,seg){var me=new T.Mesh(new T.CylinderGeometry(rt,rb,h,seg||14),m);me.position.set(x,y,z);g.add(me);return me;}
+function tempTex(col){return canvasTex(256,96,function(g,w,h){g.fillStyle=col;g.fillRect(0,0,w,h);g.fillStyle='#14181C';g.fillRect(150,14,96,68);g.fillStyle='#FF5A4E';g.font='bold 46px Arial';g.textAlign='center';g.textBaseline='middle';g.fillText('+4°',198,50);});}
+var tempTexCache={};
+var fridgeBack=new T.MeshStandardMaterial({color:'#EEF3F6',emissive:'#DCE8F2',emissiveIntensity:0.55});
+var shelfMat=M('#B9C0C6',{metalness:0.4,rough:0.4});
+var icecols=['#F7D7E3','#FBE7A1','#D9EFD3','#F4C7A6','#E8E2D8','#C9A27A'].map(function(c){return M(c,{rough:0.5});});
+var snackMats=[zoneMat.green,zoneMat.orange,zoneMat.yellow,zoneMat.pink,packWhite,packWhite];
+var pastry=M('#C9893F',{rough:0.6}),cake=M('#F6D4DF',{rough:0.6}),cake2=M('#F7EBD3',{rough:0.6}),chairMat=M('#8E959B');
+
+var TYPES={
+ cube:{n:1,name:'Витрина-«куб» с десертами',W:0.68,D:0.89,top:1.5,build:function(g,o){var hx=0.34,hz=0.445;
+   B(g,-hx,hx,0,0.9,-hz,hz,woodLight);B(g,-hx-0.02,hx+0.02,0.88,0.92,-hz-0.02,hz+0.02,greyTop);B(g,-hx,hx,0.92,1.45,-hz,hz,mat.showGlass);B(g,-hx+0.01,hx-0.01,1.17,1.18,-hz+0.02,hz-0.02,mat.showGlass);B(g,-hx,hx,1.45,1.5,-hz,hz,graph);B(g,-hx+0.01,hx-0.01,0.88,0.9,hz,hz+0.01,zoneMat.pink);
+   for(var i=0;i<3;i++)for(var j=0;j<3;j++){C(g,0.07,0.08,0.06,-0.22+i*0.22,0.95,-0.3+j*0.29,pastry,16);C(g,0.075,0.075,0.08,-0.22+i*0.22,1.22,-0.3+j*0.29,(i+j)%2?cake:cake2,18);}}},
+ bar:{n:2,name:'Барная стойка с кассой',W:2.0,D:0.61,top:1.3,build:function(g){var hx=1.0,hz=0.305;
+   B(g,-hx,hx,0,1.0,-hz,hz,woodLight);B(g,-hx-0.02,hx+0.02,1.0,1.04,-hz-0.02,hz+0.02,greyTop);B(g,-hx+0.04,hx-0.04,0.08,0.95,hz,hz+0.01,M('#C9A877',{rough:0.7}));
+   B(g,0.49,0.81,1.04,1.06,-0.2,0.1,graph);var s=B(g,0.57,0.73,1.06,1.3,-0.12,-0.1,M('#202428'));s.rotation.x=0.25;
+   B(g,-0.01,0.11,1.04,1.18,0.05,0.21,M('#2C3136'));C(g,0.045,0.035,0.3,-0.49,1.19,-0.13,packWhite,12);C(g,0.045,0.035,0.3,-0.49,1.19,-0.03,packWhite,12);}},
+ coffee:{n:3,name:'Кофейная стойка',W:2.0,D:0.59,top:1.45,build:function(g){var hx=1.0,hz=0.295;
+   B(g,-hx,hx,0,0.9,-hz,hz,woodLight);B(g,-hx-0.02,hx+0.02,0.9,0.94,-hz-0.02,hz+0.02,greyTop);
+   B(g,-0.75,0.0,0.94,1.38,-0.25,0.17,M('#B9BEC2',{metalness:0.6,rough:0.3}));B(g,-0.75,0.0,1.36,1.4,-0.25,0.17,graph);B(g,-0.7,-0.05,1.05,1.3,0.17,0.19,M('#2A2E33'));
+   [-0.62,-0.38,-0.18].forEach(function(x){B(g,x-0.04,x+0.04,1.12,1.16,0.13,0.23,mat.black);});
+   [0.38,0.18].forEach(function(x){C(g,0.06,0.08,0.28,x,1.08,-0.05,graph);C(g,0.08,0.04,0.16,x,1.3,-0.05,mat.showGlass);});
+   var sy=['#7B3F1D','#C0392B','#D9A441','#5B8C3A','#8E44AD','#EDE6D6'];for(var k=0;k<6;k++)C(g,0.03,0.03,0.24,0.9-k*0.075,1.06,-0.2,M(sy[k],{rough:0.3}),10);
+   for(var k=0;k<5;k++)C(g,0.04,0.03,0.09,-0.38,1.44,-0.18+k*0.085,packWhite,12);C(g,0.045,0.05,0.12,-0.85,1.0,0.1,mat.steel,12);}},
+ pos:{n:4,name:'Касса',W:0.73,D:0.42,top:1.3,build:function(g){B(g,-0.365,0.365,0,1.0,-0.21,0.21,woodLight);B(g,-0.385,0.385,1.0,1.03,-0.23,0.23,greyTop);B(g,-0.12,0.12,1.03,1.28,-0.05,0.05,graph);}},
+ freezer:{n:5,name:'Морозилка с мороженым',W:0.98,D:0.62,top:0.9,build:function(g){var hx=0.49,hz=0.31,wm=M('#F5F6F6');
+   B(g,-hx,hx,0,0.12,-hz,hz,greyLight);B(g,-hx,hx,0.12,0.72,-hz,hz,wm);B(g,-hx,hx,0.72,0.86,-hz,-hz+0.03,wm);B(g,-hx,hx,0.72,0.86,hz-0.03,hz,wm);B(g,-hx,-hx+0.03,0.72,0.86,-hz,hz,wm);B(g,hx-0.03,hx,0.72,0.86,-hz,hz,wm);
+   B(g,-hx+0.03,hx-0.03,0.86,0.875,-hz+0.03,hz-0.03,mat.showGlass);
+   for(var i=0;i<6;i++)for(var j=0;j<3;j++)C(g,0.065,0.06,0.09,-0.4+i*0.155,0.775,-0.2+j*0.2,icecols[(i+j)%6],16);B(g,-hx,hx,0.3,0.5,hz,hz+0.002,zoneMat.pink);}},
+ rack:{n:6,name:'Стеллаж «Снеки»',W:0.58,D:0.29,top:1.6,build:function(g,o){var hx=(o.w||0.58)/2,hz=0.145,h=o.h||1.4;
+   B(g,-hx,hx,0,0.03,-hz,hz,graph);B(g,-hx,hx,h-0.03,h,-hz,hz,graph);B(g,-hx,hx,0,h,-hz,-hz+0.03,woodLight);
+   var n=4;for(var s=0;s<n;s++){var y=0.08+s*((h-0.1)/n);B(g,-hx,hx,y,y+0.02,-hz,hz,woodLight);var cnt=Math.max(2,Math.floor(2*hx/0.12));
+    for(var q=0;q<cnt;q++){var hh=0.12+((q*7+s*3)%5)*0.022;B(g,-hx+0.02+q*(2*hx-0.04)/cnt,-hx+0.02+(q+0.8)*(2*hx-0.04)/cnt,y+0.02,y+0.02+hh,-hz+0.05,hz-0.02,snackMats[(q+s*2)%6]);}}}},
+ fridge:{n:7,name:'Холодильник высокий двухдверный +4 °C',W:1.25,D:0.84,top:2.3,build:function(g,o){fridgeBuild(g,o,1.25,0.84,true);}},
+ fridge1:{n:13,name:'Холодильник однодверный +4 °C',W:0.6,D:0.65,top:2.3,build:function(g,o){fridgeBuild(g,o,0.6,0.65,false);}},
+ selfpos:{n:14,name:'Касса самообслуживания',W:0.5,D:0.45,top:1.6,build:function(g){B(g,-0.22,0.22,0,0.04,-0.2,0.2,graph);B(g,-0.06,0.06,0.04,1.0,-0.06,0.06,greyLight);B(g,-0.2,0.2,0.86,0.89,0.02,0.22,greyTop);B(g,-0.04,0.06,0.89,0.92,0.06,0.16,M('#20252A'));
+   var s=new T.Group();s.position.set(0,1.22,0);s.rotation.x=-0.25;g.add(s);B(s,-0.22,0.22,-0.25,0.25,-0.03,0.03,graph);B(s,-0.19,0.19,-0.21,0.22,0.03,0.036,new T.MeshStandardMaterial({color:'#DDEBF5',emissive:'#9CC3E0',emissiveIntensity:0.5}));B(s,-0.19,0.19,0.16,0.22,0.037,0.04,zoneMat.yellow);}},
+ wincounter:{n:15,name:'Стойка у окна с высокими стульями',W:1.6,D:0.95,top:1.3,build:function(g){var hx=0.8,z0=0.025,z1=0.475;
+   B(g,-hx,hx,1.03,1.07,z0,z1,woodLight);[-0.7,0.7].forEach(function(x){B(g,x-0.03,x+0.03,0,1.03,z1-0.1,z1-0.04,graph);});
+   [-0.5,0,0.5].forEach(function(x){stool(g,x,-0.2);});}},
+ table:{n:16,name:'Стол круглый',W:0.7,D:0.7,top:1.0,build:function(g){tableTop(g);}},
+ chair:{n:17,name:'Стул',W:0.42,D:0.45,top:1.05,build:function(g){var c=chairModel();c.rotation.y=Math.PI;g.add(c);}},
+ trash:{n:18,name:'Урна',W:0.36,D:0.36,top:0.9,build:function(g){C(g,0.17,0.15,0.62,0,0.31,0,graph,18);C(g,0.18,0.18,0.04,0,0.64,0,greyLight,18);}},
+ heat:{n:8,name:'Зона разогрева',W:1.1,D:0.61,top:1.6,build:function(g){var hx=0.55,hz=0.305;B(g,-hx,hx,0,0.95,-hz,hz,woodLight);B(g,-hx-0.02,hx+0.02,0.95,0.99,-hz-0.02,hz+0.02,greyTop);
+   [-0.48,0.0].forEach(function(x){B(g,x,x+0.44,0.99,1.27,-0.2,0.18,M('#2E3338',{rough:0.4}));B(g,x+0.03,x+0.32,1.03,1.23,0.18,0.185,M('#11161B',{rough:0.1}));B(g,x+0.35,x+0.41,1.05,1.22,0.18,0.185,M('#6F777E'));});
+   C(g,0.17,0.15,0.6,hx+0.22,0.3,0.1,graph,16);}},
+ table2:{n:9,name:'Стол с двумя стульями',W:1.6,D:0.68,top:1.3,build:function(g){table(g,[[0.55,0],[-0.55,0]]);}},
+ table4:{n:10,name:'Стол с четырьмя стульями',W:1.6,D:1.6,top:1.3,build:function(g){table(g,[[0.55,0],[-0.55,0],[0,0.55],[0,-0.55]]);}},
+ sink:{n:11,name:'Мойка',W:0.41,D:0.49,top:1.2,build:function(g){B(g,-0.205,0.205,0,0.85,-0.245,0.245,mat.steel);B(g,-0.15,0.15,0.8,0.86,-0.18,0.15,M('#7D868D',{metalness:0.6,rough:0.3}));}},
+ barista:{n:12,name:'Бариста',W:0.4,D:0.3,top:1.95,build:function(g){C(g,0.13,0.11,0.9,0,0.45,0,M('#4A5058'));C(g,0.17,0.15,0.62,0,1.21,0,M('#1D2024'),16);
+   var hd=new T.Mesh(new T.SphereGeometry(0.11,18,14),M('#E2B996'));hd.position.y=1.66;g.add(hd);var hr=new T.Mesh(new T.SphereGeometry(0.115,18,10,0,Math.PI*2,0,Math.PI/2),M('#4A3426'));hr.position.y=1.68;g.add(hr);}}
+};
+/* разделы базы и пояснения к элементам */
+var CATS=[['cold','Холодильное оборудование'],['counter','Стойки, касса, кофе, разогрев'],['shelf','Выкладка'],['seat','Посадка'],['misc','Прочее']];
+var META={
+ fridge:['cold','Главный элемент зала с готовой едой. Цвет полок — зона: зелёный салаты, оранжевый супы, жёлтый основное, розовый десерты.'],
+ fridge1:['cold','Та же модель, узкая: напитки, соки, вода. Цвет полок тоже меняется.'],
+ freezer:['cold','Ларь по пояс со стеклянной крышкой: мороженое, заморозка.'],
+ cube:['cold','Стеклянная витрина на тумбе: выпечка и десерты.'],
+ bar:['counter','Стойка, через которую обслуживают покупателя, с кассой и стаканами.'],
+ coffee:['counter','Кофемашина, кофемолки, сиропы, стаканы.'],
+ pos:['counter','Отдельная касса на тумбе.'],
+ selfpos:['counter','Стойка с экраном и терминалом — Uppetit работает по самообслуживанию.'],
+ heat:['counter','Две микроволновки, чтобы разогреть купленное.'],
+ sink:['counter','Для бариста, у кофейной зоны.'],
+ rack:['shelf','Полки со снеками и упаковкой. На чертеже два: в окне и у стены.'],
+ table:['seat','Одна модель стола на весь зал.'],
+ chair:['seat','Одна модель стула на весь зал — для свободной расстановки.'],
+ table2:['seat','Тот же стол и те же стулья, собранные в комплект.'],
+ table4:['seat','Тот же стол и те же стулья, на четверых.'],
+ wincounter:['seat','Узкая стойка вдоль окна: гостей видно с улицы, витрина «живая».'],
+ trash:['misc','Рядом с разогревом и посадкой.'],
+ barista:['misc','Фигура для масштаба: сотрудник в чёрной футболке.']
+};
+Object.keys(META).forEach(function(k){TYPES[k].cat=META[k][0];TYPES[k].note=META[k][1];});
+function isFridge(t){return t==='fridge'||t==='fridge1';}
+function fridgeBuild(g,o,W,D,two){var Hh=2.05,t=0.05,hx=W/2,hz=D/2,zc=ZONE[o.zone||'yellow'],zm=zoneMat[o.zone||'yellow'];
+   B(g,-hx,hx,0,0.12,-hz,hz,greyLight);B(g,-hx,-hx+t,0.12,Hh-0.22,-hz,hz,greyLight);B(g,hx-t,hx,0.12,Hh-0.22,-hz,hz,greyLight);B(g,-hx,hx,0.12,Hh-0.22,-hz,-hz+0.04,fridgeBack);B(g,-hx,hx,Hh-0.22,Hh,-hz,hz,greyLight);
+   if(!tempTexCache[zc])tempTexCache[zc]=tempTex(zc);var hm=new T.Mesh(new T.PlaneGeometry(W,0.2),new T.MeshBasicMaterial({map:tempTexCache[zc]}));hm.position.set(0,Hh-0.11,hz+0.002);g.add(hm);
+   for(var s=0;s<5;s++){var y=0.18+s*0.33;B(g,-hx+t,hx-t,y,y+0.012,-hz+0.05,hz-0.06,shelfMat);B(g,-hx+t,hx-t,y-0.03,y+0.012,hz-0.07,hz-0.06,zm);
+    var n=Math.floor((W-0.12)/0.17);for(var q=0;q<n;q++)for(var r=0;r<2;r++){var px=-hx+0.16+q*((W-0.16)/n);var pz=hz-0.16-r*0.22;var hh=0.08+((q+s+r)%3)*0.035;
+      B(g,px-0.07,px+0.07,y+0.012,y+0.012+hh,pz-0.09,pz+0.09,packWhite);B(g,px-0.07,px+0.07,y+0.012+hh*0.35,y+0.012+hh*0.7,pz+0.09,pz+0.092,(r||s%2)?zm:packWhite);}}
+   var fz=hz+0.005;B(g,-hx,hx,0.12,0.16,fz-0.01,fz+0.02,graph);B(g,-hx,hx,Hh-0.26,Hh-0.22,fz-0.01,fz+0.02,graph);B(g,-hx,-hx+0.04,0.12,Hh-0.22,fz-0.01,fz+0.02,graph);B(g,hx-0.04,hx,0.12,Hh-0.22,fz-0.01,fz+0.02,graph);
+   B(g,-hx+0.04,hx-0.04,0.16,Hh-0.26,fz,fz+0.006,mat.showGlass).renderOrder=4;
+   if(two){B(g,-0.02,0.02,0.12,Hh-0.22,fz-0.01,fz+0.02,graph);B(g,-0.09,-0.07,0.7,1.5,fz+0.02,fz+0.05,mat.steel);B(g,0.07,0.09,0.7,1.5,fz+0.02,fz+0.05,mat.steel);}
+   else B(g,hx-0.1,hx-0.08,0.7,1.5,fz+0.02,fz+0.05,mat.steel);}
+/* одна модель стола и одна модель стула на весь зал; комплекты собираются из них */
+function tableTop(g){C(g,0.34,0.34,0.03,0,0.75,0,woodLight,32);C(g,0.03,0.03,0.74,0,0.37,0,graph,8);C(g,0.2,0.22,0.02,0,0.01,0,graph,20);}
+function chairModel(){var c=new T.Group();B(c,-0.21,0.21,0.43,0.47,-0.21,0.21,chairMat);B(c,-0.21,0.21,0.47,0.87,0.18,0.22,chairMat);[[-0.18,-0.18],[0.18,-0.18],[-0.18,0.18],[0.18,0.18]].forEach(function(q){C(c,0.012,0.012,0.45,q[0],0.225,q[1],graph,6);});return c;}
+function stool(g,x,z){C(g,0.17,0.17,0.04,x,0.76,z,woodLight,20);C(g,0.025,0.025,0.74,x,0.37,z,graph,8);var r=new T.Mesh(new T.TorusGeometry(0.13,0.01,6,20),graph);r.rotation.x=Math.PI/2;r.position.set(x,0.3,z);g.add(r);C(g,0.17,0.19,0.02,x,0.01,z,graph,20);}
+function table(g,chairs){tableTop(g);
+ chairs.forEach(function(p){var c=chairModel();c.position.set(p[0],0,p[1]);c.lookAt(0,0,0);c.rotateY(Math.PI);g.add(c);});}
+
+function makeLabel(n){var c=document.createElement('canvas');c.width=c.height=96;var g=c.getContext('2d');g.fillStyle='#E2B32A';g.beginPath();g.arc(48,48,42,0,7);g.fill();g.lineWidth=5;g.strokeStyle='#1A2836';g.stroke();g.fillStyle='#1A2836';g.font='bold 46px Arial';g.textAlign='center';g.textBaseline='middle';g.fillText(n,48,51);var t=new T.CanvasTexture(c);var s=new T.Sprite(new T.SpriteMaterial({map:t,depthTest:true,sizeAttenuation:false}));s.scale.set(0.045,0.045,1);s.renderOrder=10;s.userData.label=true;return s;}
+var labelsOn=true;
+var DEFAULT_ITEMS=[
+ {t:'cube',x:2.56,d:0.465,r:0},{t:'bar',x:2.525,d:1.91,r:270},{t:'coffee',x:4.245,d:1.0,r:270},{t:'pos',x:4.045,d:3.23,r:0},
+ {t:'freezer',x:1.12,d:0.31,r:0},{t:'rack',x:4.505,d:-0.325,r:270,w:0.55,h:1.2},{t:'rack',x:4.535,d:3.73,r:270},
+ {t:'fridge',x:0.485,d:2.685,r:90,zone:'green'},{t:'fridge',x:0.485,d:3.965,r:90,zone:'yellow'},{t:'fridge',x:2.655,d:4.89,r:0,zone:'orange'},
+ {t:'heat',x:2.65,d:6.655,r:180},{t:'sink',x:4.375,d:2.705,r:270},
+ {t:'table2',x:0.46,d:7.74,r:90},{t:'table2',x:0.46,d:10.01,r:90},{t:'table2',x:1.66,d:8.89,r:0},{t:'table2',x:1.27,d:10.56,r:0},{t:'table2',x:2.63,d:10.33,r:90},{t:'table2',x:4.08,d:8.01,r:90},
+ {t:'barista',x:3.68,d:1.6,r:90}
+];
+var items=[],groups={},uid=1;
+function baseY(it){return it.d<0?SILL:0;}           // в оконном проёме — стоит на подоконнике
+function place(it){var g=groups[it.id];if(!g)return;g.position.set(it.x,baseY(it),-it.d);g.rotation.y=it.r*Math.PI/180;}
+function buildItem(it){if(groups[it.id]){scene.remove(groups[it.id]);}var ty=TYPES[it.t];var g=new T.Group();ty.build(g,it);var lb=makeLabel(ty.n);lb.position.set(0,(it.t==='rack'?(it.h||1.4)+0.2:ty.top)+0.05,0);lb.visible=labelsOn;g.add(lb);groups[it.id]=g;scene.add(g);place(it);}
+function setItems(list){Object.keys(groups).forEach(function(k){scene.remove(groups[k]);});groups={};items=list.map(function(o){var it=JSON.parse(JSON.stringify(o));it.id=uid++;return it;});items.forEach(buildItem);}
+function eachLabel(fn){scene.traverse(function(o){if(o.userData&&o.userData.label)fn(o);});}
+setItems(DEFAULT_ITEMS);
+/* --- фасад --- */
+var facade=new T.Group();scene.add(facade);var upper=new T.Group();scene.add(upper);
+var FL=-10,FR=15,ARC={a:6.0,b:8.8,spring:2.4},DOOR={a:-1.45,b:-0.45,h:2.35};
+var sh=new T.Shape();sh.moveTo(FL,0);sh.lineTo(DOOR.a,0);sh.lineTo(DOOR.a,DOOR.h);sh.lineTo(DOOR.b,DOOR.h);sh.lineTo(DOOR.b,0);
+sh.lineTo(ARC.a,0);sh.lineTo(ARC.a,ARC.spring);sh.absarc((ARC.a+ARC.b)/2,ARC.spring,(ARC.b-ARC.a)/2,Math.PI,0,true);sh.lineTo(ARC.b,0);sh.lineTo(FR,0);sh.lineTo(FR,4.1);sh.lineTo(FL,4.1);sh.lineTo(FL,0);
+WIN.forEach(function(w){var h=new T.Path();h.moveTo(w.a,SILL);h.lineTo(w.a,TOP);h.lineTo(w.b,TOP);h.lineTo(w.b,SILL);h.lineTo(w.a,SILL);sh.holes.push(h);});
+// заполнить низ под окнами отдельно (подоконная часть)
+var fg=new T.ExtrudeGeometry(sh,{depth:ROOM.wall,bevelEnabled:false});
+var facadeMat=M('#ffffff',{map:plasterTex});
+var fm=new T.Mesh(fg,facadeMat);facade.add(fm);
+// окна: стекло, рамы, отливы
+WIN.forEach(function(w){var gl=new T.Mesh(new T.PlaneGeometry(w.b-w.a,TOP-SILL),mat.glass);gl.position.set((w.a+w.b)/2,(SILL+TOP)/2,GLZ);facade.add(gl);gl.renderOrder=5;
+ var f=0.06;box(w.a,w.b,TOP-f,TOP,-GLZ-0.03,-GLZ+0.03,mat.frame,facade);box(w.a,w.b,SILL,SILL+f,-GLZ-0.03,-GLZ+0.03,mat.frame,facade);box(w.a,w.a+f,SILL,TOP,-GLZ-0.03,-GLZ+0.03,mat.frame,facade);box(w.b-f,w.b,SILL,TOP,-GLZ-0.03,-GLZ+0.03,mat.frame,facade);
+ box(w.a-0.05,w.b+0.05,SILL-0.05,SILL,-ROOM.wall-0.12,-GLZ+0.03,mat.white,facade);
+ box(w.a,w.b,SILL-0.02,SILL,-GLZ,0,mat.top,facade);});
+// арка: тоннель и решётка
+box(ARC.a,ARC.b,0,ARC.spring+1.4,-ROOM.wall,6,M('#3A3631'),upper).material.side=T.BackSide;
+for(var gx=ARC.a+0.12;gx<ARC.b;gx+=0.14){var hgt=ARC.spring+Math.sqrt(Math.max(0,1.96-Math.pow(gx-(ARC.a+ARC.b)/2,2)))-0.05;box(gx,gx+0.02,0,hgt,-0.42,-0.4,mat.black,facade);}
+box(ARC.a,ARC.b,1.1,1.14,-0.43,-0.39,mat.black,facade);box(ARC.a,ARC.b,2.2,2.24,-0.43,-0.39,mat.black,facade);
+// вывеска
+var signTex=canvasTex(2048,256,function(g,w,h){g.clearRect(0,0,w,h);g.font='bold 190px "Golos Text", Arial, sans-serif';g.textAlign='center';g.textBaseline='middle';g.lineWidth=10;g.fillStyle='#3B4045';g.fillRect(0,0,w,h);g.font='bold 170px "Golos Text", Arial, sans-serif';g.fillStyle='#F4F4F2';g.fillText('UPPETIT',w/2,h/2+8);});
+signTex.wrapS=signTex.wrapT=T.ClampToEdgeWrapping;
+var sign=new T.Mesh(new T.PlaneGeometry(3.6,0.45),new T.MeshStandardMaterial({map:signTex,transparent:true,roughness:0.5}));sign.position.set(2.77,2.75,ROOM.wall+0.04);upper.add(sign);
+// табличка с номером
+var numTex=canvasTex(256,160,function(g,w,h){g.fillStyle='#2457A6';g.beginPath();g.moveTo(30,0);g.arcTo(w,0,w,h,30);g.arcTo(w,h,0,h,30);g.arcTo(0,h,0,0,30);g.arcTo(0,0,w,0,30);g.fill();g.fillStyle='#fff';g.font='bold 110px Arial';g.textAlign='center';g.textBaseline='middle';g.fillText('38',w/2,h/2+6);});
+numTex.wrapS=numTex.wrapT=T.ClampToEdgeWrapping;
+var plate=new T.Mesh(new T.PlaneGeometry(0.5,0.31),new T.MeshStandardMaterial({map:numTex,transparent:true}));plate.position.set(5.45,3.3,ROOM.wall+0.03);upper.add(plate);
+// вход с улицы (левее окон) и тамбур
+(function(){var dm=M('#2F3438',{rough:0.45}),gm=mat.showGlass;var z=0.32;
+ box(DOOR.a,DOOR.b,DOOR.h-0.06,DOOR.h,-z-0.03,-z+0.03,dm,facade);box(DOOR.a,DOOR.a+0.06,0,DOOR.h,-z-0.03,-z+0.03,dm,facade);box(DOOR.b-0.06,DOOR.b,0,DOOR.h,-z-0.03,-z+0.03,dm,facade);
+ box(DOOR.a+0.06,DOOR.b-0.06,0,0.18,-z-0.02,-z+0.02,dm,facade);box(DOOR.a+0.06,DOOR.b-0.06,0.18,DOOR.h-0.06,-z-0.004,-z+0.004,gm,facade).renderOrder=4;
+ box(DOOR.b-0.2,DOOR.b-0.17,0.85,1.45,-z-0.08,-z-0.04,mat.steel,facade);
+ box(DOOR.a-0.15,DOOR.b+0.15,0,0.12,-ROOM.wall-0.35,-ROOM.wall,M('#9C958D'),facade); // ступень
+ var vs=M('#ffffff',{map:canvasTex(64,64,function(g,w,h){g.fillStyle='#3B4045';g.fillRect(0,0,w,h);})});
+ var plateIn=new T.Mesh(new T.PlaneGeometry(0.9,0.22),new T.MeshBasicMaterial({map:canvasTex(256,64,function(g,w,h){g.fillStyle='#3B4045';g.fillRect(0,0,w,h);g.fillStyle='#F4F4F2';g.font='bold 34px Arial';g.textAlign='center';g.textBaseline='middle';g.fillText('ВХОД',w/2,h/2+2);})}));
+ plateIn.position.set((DOOR.a+DOOR.b)/2,DOOR.h+0.25,ROOM.wall+0.02);facade.add(plateIn);
+ // тамбур: пол, стены, потолок
+ var V={a:-1.75,b:-0.12,d:2.0};
+ var vf=new T.Mesh(new T.PlaneGeometry(V.b-V.a,V.d),M('#ffffff',{map:floorTex}));vf.rotation.x=-Math.PI/2;vf.position.set((V.a+V.b)/2,0.002,-V.d/2);scene.add(vf);
+ function wp(w,h,x,y,z,ry){var p=new T.Mesh(new T.PlaneGeometry(w,h),mat.wallIn);p.position.set(x,y,z);p.rotation.y=ry;scene.add(p);}
+ wp(V.b-V.a,ROOM.h,(V.a+V.b)/2,ROOM.h/2,-V.d,0);
+ wp(V.d,ROOM.h,V.a,ROOM.h/2,-V.d/2,Math.PI/2);
+ wp(1.05,ROOM.h,V.b,ROOM.h/2,-0.525,-Math.PI/2);wp(0.82,ROOM.h-2.1,V.b,2.1+(ROOM.h-2.1)/2,-1.46,-Math.PI/2);wp(V.d-1.87,ROOM.h,V.b,ROOM.h/2,-(1.87+V.d)/2,-Math.PI/2);
+ box(V.b,0,2.1,ROOM.h,1.05,1.87,mat.wallIn);box(V.b,0,0,ROOM.h,0,1.05,mat.wallIn);box(V.b,0,0,ROOM.h,1.87,V.d,mat.wallIn);
+ var vc=new T.Mesh(new T.PlaneGeometry(V.b-V.a,V.d),M('#6C7277'));vc.rotation.x=Math.PI/2;vc.position.set((V.a+V.b)/2,ROOM.h,-V.d/2);scene.add(vc);
+ var vl=new T.PointLight('#FFE3B8',0.3,4);vl.position.set(-0.9,2.8,-1);scene.add(vl);
+ // внутренняя стеклянная дверь в зал
+ box(-0.06,-0.02,0,2.1,1.07,1.85,mat.showGlass).renderOrder=4;box(-0.07,-0.01,2.04,2.1,1.07,1.85,dm);
+})();
+// верхний этаж
+var sh2=new T.Shape();sh2.moveTo(FL,4.1);sh2.lineTo(FR,4.1);sh2.lineTo(FR,6.6);sh2.lineTo(FL,6.6);sh2.lineTo(FL,4.1);
+var UW=[[-8.4,-7.1],[-5.5,-4.2],[-2.6,-1.3],[0.25,1.55],[2.5,3.8],[9.0,10.2],[11.8,13.1]];
+UW.forEach(function(u){var h=new T.Path();h.moveTo(u[0],4.5);h.lineTo(u[1],4.5);h.lineTo(u[1],6.2);h.lineTo(u[0],6.2);h.lineTo(u[0],4.5);sh2.holes.push(h);});
+upper.add(new T.Mesh(new T.ExtrudeGeometry(sh2,{depth:ROOM.wall,bevelEnabled:false}),facadeMat));
+UW.forEach(function(u){var p=new T.Mesh(new T.PlaneGeometry(u[1]-u[0],1.7),M('#4E5A63',{rough:0.2,metalness:0.3}));p.position.set((u[0]+u[1])/2,5.35,0.5);upper.add(p);box(u[0],u[1],4.45,4.5,-0.9,-0.5,mat.white,upper);});
+// цоколь
+box(FL,FR,0,0.18,-ROOM.wall-0.03,-ROOM.wall+0.02,M('#B9AE98'),facade);
+// тротуар, дорога, столбики
+var pv=new T.Mesh(new T.PlaneGeometry(26,5.4),M('#ffffff',{map:paveTex}));paveTex.repeat.set(26/1.2,5.4/1.2);pv.rotation.x=-Math.PI/2;pv.position.set(3,0,ROOM.wall+2.7);scene.add(pv);
+var rd=new T.Mesh(new T.PlaneGeometry(40,20),M('#55585C'));rd.rotation.x=-Math.PI/2;rd.position.set(3,-0.02,ROOM.wall+15.4);scene.add(rd);
+box(-6,12,0,0.12,-(ROOM.wall+5.4),-(ROOM.wall+5.6),M('#8C877F'));
+[[5.3,1.35],[9.1,1.25]].forEach(function(p){var c=new T.Mesh(new T.CylinderGeometry(0.1,0.11,0.85,16),mat.black);c.position.set(p[0],0.42,p[1]);scene.add(c);});
+// подвал/служебные — стены вне зала скрыты
+
+/* ===== Ракурсы ===== */
+var PRESETS=[
+ ['Прохожий у витрин',[1.7,1.6,5.0],[1.7,1.3,-3]],
+ ['У входа',[-0.95,1.6,3.2],[-0.6,1.2,-2]],
+ ['Вплотную к левому окну',[1.55,1.55,2.0],[1.6,1.1,-4]],
+ ['Вплотную к правому окну',[3.85,1.55,2.0],[3.6,1.1,-4]],
+ ['С другой стороны улицы',[2.0,1.65,9],[2.0,1.9,0]],
+ ['Ракурс как на фото',[5.6,2.3,9],[2.4,1.5,0]],
+ ['Изнутри к окнам',[1.28,1.6,-7.2],[2.18,1.2,0.6]],
+ ['Сверху: весь зал',[1.6,16.5,-4.2],[1.6,0,-5.6]]
+];
+var pbox=document.getElementById('presets'),anim=null;
+PRESETS.forEach(function(p,i){var b=document.createElement('button');b.textContent=p[0];b.addEventListener('click',function(){go(i);});pbox.appendChild(b);});
+function setUpper(top){upper.visible=!top;}
+function go(i,instant){var p=PRESETS[i];[].forEach.call(pbox.children,function(b,k){b.classList.toggle('on',k===i);});setUpper(p[0].indexOf('Сверху')===0);
+ var to={p:new T.Vector3().fromArray(p[1]),t:new T.Vector3().fromArray(p[2])};
+ var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+ if(instant||reduce){camera.position.copy(to.p);controls.target.copy(to.t);controls.update();return;}
+ anim={fp:camera.position.clone(),ft:controls.target.clone(),to:to,t0:performance.now()};}
+document.getElementById('lbl').addEventListener('change',function(e){labelsOn=e.target.checked;eachLabel(function(s){s.visible=labelsOn;});});
+
+window.resize=resize;function resize(){var w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.fov=w/h<1.3?72:55;camera.updateProjectionMatrix();}
+window.addEventListener('resize',resize);
+go(0,true);resize();
+(function loop(now){requestAnimationFrame(loop);if(anim){var k=Math.min(1,(now-anim.t0)/900);k=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;camera.position.lerpVectors(anim.fp,anim.to.p,k);controls.target.lerpVectors(anim.ft,anim.to.t,k);if(k>=1)anim=null;}
+ controls.update();if(document.getElementById('v3d').classList.contains('on'))renderer.render(scene,camera);})();
+
+/* ===== Фото + интерьер ===== */
+var photo=new Image();photo.src='data:image/png;base64,';
+var mc=document.getElementById('mont'),mx=mc.getContext('2d',{willReadFrequently:true});
+var CROP={x:20,y:140,w:380,h:210},SC=3;
+// стекло окон на снимке (пиксели исходного фото): ЛВ, ПВ, ПН, ЛН
+var QUADS=[[[89,218],[150,218],[154,303],[92,303]],[[208,221],[290,221],[289,302],[212,302]]];
+var off=null,offCam=new T.PerspectiveCamera(32,4/3,0.05,200),showBefore=false;
+function triMap(src,s,d,grow){var x0=s[0][0],y0=s[0][1],u0=d[0][0],v0=d[0][1];
+ var dx1=s[1][0]-x0,dy1=s[1][1]-y0,dx2=s[2][0]-x0,dy2=s[2][1]-y0,du1=d[1][0]-u0,dv1=d[1][1]-v0,du2=d[2][0]-u0,dv2=d[2][1]-v0;
+ var det=dx1*dy2-dx2*dy1;if(!det)return;
+ var a=(du1*dy2-du2*dy1)/det,c=(du2*dx1-du1*dx2)/det,b=(dv1*dy2-dv2*dy1)/det,dd=(dv2*dx1-dv1*dx2)/det,e=u0-a*x0-c*y0,f=v0-b*x0-dd*y0;
+ var cx=(d[0][0]+d[1][0]+d[2][0])/3,cy=(d[0][1]+d[1][1]+d[2][1])/3;var g=d.map(function(p){var vx=p[0]-cx,vy=p[1]-cy,l=Math.hypot(vx,vy)||1;return [p[0]+vx/l*(grow||0)*2,p[1]+vy/l*(grow||0)*2];});
+ mx.save();mx.beginPath();mx.moveTo(g[0][0],g[0][1]);mx.lineTo(g[1][0],g[1][1]);mx.lineTo(g[2][0],g[2][1]);mx.closePath();mx.clip();
+ mx.transform(a,b,c,dd,e,f);mx.drawImage(src,0,0);mx.restore();}
+function toC(p){return [(p[0]-CROP.x)*SC,(p[1]-CROP.y)*SC];}
+function drawMontage(){if(!photo.complete){photo.onload=drawMontage;return;}
+ mx.imageSmoothingQuality='high';mx.clearRect(0,0,mc.width,mc.height);
+ mx.drawImage(photo,CROP.x,CROP.y,CROP.w,CROP.h,0,0,mc.width,mc.height);
+ if(showBefore)return;
+ (function(){mx.save();mx.filter='blur(1px)';mx.fillStyle='rgba(0,0,0,.22)';mx.fillRect(150,66,560,78);mx.fillStyle='#3B4045';mx.fillRect(142,58,560,78);
+  mx.font='bold 54px "Golos Text", Arial, sans-serif';mx.textAlign='center';mx.textBaseline='middle';mx.fillStyle='#F4F4F2';mx.fillText('UPPETIT',422,99);mx.restore();})();
+ if(!off){off=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});off.outputEncoding=T.sRGBEncoding;off.toneMapping=T.ACESFilmicToneMapping;off.toneMappingExposure=0.72;off.setSize(1600,1200,false);}
+ eachLabel(function(s){s.visible=false;});var hv=scene.children.filter(function(o){return o.type==='BoxHelper';});hv.forEach(function(o){o.userData.v=o.visible;o.visible=false;});var uv=upper.visible;upper.visible=true;
+ offCam.position.set(5.6,2.3,9);offCam.lookAt(2.4,1.5,0);offCam.updateMatrixWorld();offCam.updateProjectionMatrix();
+ off.render(scene,offCam);
+ eachLabel(function(s){s.visible=labelsOn;});hv.forEach(function(o){o.visible=o.userData.v;});upper.visible=uv;
+ var W=1600,H=1200,refl=document.getElementById('refl').value/100;
+ mx.save();mx.fillStyle='rgba(47,52,56,.9)';mx.beginPath();mx.roundRect?mx.roundRect(14,300,112,40,8):mx.rect(14,300,112,40);mx.fill();mx.fillStyle='#fff';mx.font='600 22px "Golos Text", Arial';mx.textBaseline='middle';mx.fillText('← вход',30,321);mx.restore();
+ WIN.forEach(function(w,i){var z=GLZ-0.03;var pts=[[w.a+0.06,TOP-0.06],[w.b-0.06,TOP-0.06],[w.b-0.06,SILL+0.06],[w.a+0.06,SILL+0.06]].map(function(q){var v=new T.Vector3(q[0],q[1],z).project(offCam);return [(v.x+1)/2*W,(1-v.y)/2*H];});
+  var dq=QUADS[i].map(toC);
+  mx.save();mx.beginPath();dq.forEach(function(p,k){k?mx.lineTo(p[0],p[1]):mx.moveTo(p[0],p[1]);});mx.closePath();mx.clip();
+  mx.filter='blur(1.2px) saturate(0.95)';
+  triMap(off.domElement,[pts[0],pts[1],pts[2]],[dq[0],dq[1],dq[2]],1);triMap(off.domElement,[pts[0],pts[2],pts[3]],[dq[0],dq[2],dq[3]],1);
+  mx.filter='none';mx.restore();
+  // отражение — исходное стекло поверх с прозрачностью
+  mx.save();mx.globalAlpha=refl;mx.beginPath();dq.forEach(function(p,k){k?mx.lineTo(p[0],p[1]):mx.moveTo(p[0],p[1]);});mx.closePath();mx.clip();
+  mx.drawImage(photo,CROP.x,CROP.y,CROP.w,CROP.h,0,0,mc.width,mc.height);mx.restore();
+  mx.save();mx.strokeStyle='rgba(235,235,230,.85)';mx.lineWidth=4;mx.beginPath();dq.forEach(function(p,k){k?mx.lineTo(p[0],p[1]):mx.moveTo(p[0],p[1]);});mx.closePath();mx.stroke();mx.restore();});
+}
+document.getElementById('ba').addEventListener('click',function(e){showBefore=!showBefore;e.target.textContent=showBefore?'Показать с интерьером':'Показать как сейчас';drawMontage();});
+document.getElementById('refl').addEventListener('input',drawMontage);
+
+/* ===== База элементов: карточки с миниатюрой, размерами и счётчиком «в зале» ===== */
+function typesIn(cat){return Object.keys(TYPES).filter(function(k){return TYPES[k].cat===cat;}).sort(function(a,b){return TYPES[a].n-TYPES[b].n;});}
+function counts(){var c={};items.forEach(function(it){c[it.t]=(c[it.t]||0)+1;});return c;}
+var thumbs={},catBuilt=false;
+function makeThumbs(){var r=new T.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});r.setSize(320,240,false);r.outputEncoding=T.sRGBEncoding;r.toneMapping=T.ACESFilmicToneMapping;r.toneMappingExposure=1.0;
+ var sc=new T.Scene();sc.add(new T.HemisphereLight('#F4F8FC','#8A8278',0.9));var dl=new T.DirectionalLight('#FFF6EA',0.8);dl.position.set(3,6,5);sc.add(dl);
+ var cam=new T.PerspectiveCamera(30,4/3,0.05,50),dir=new T.Vector3(0.85,0.7,1.5).normalize();
+ Object.keys(TYPES).forEach(function(k){var ty=TYPES[k],g=new T.Group(),o={t:k};if(isFridge(k))o.zone=k==='fridge1'?'green':'yellow';ty.build(g,o);sc.add(g);
+  var bb=new T.Box3().setFromObject(g),sz=bb.getSize(new T.Vector3()),ctr=bb.getCenter(new T.Vector3());ty.H=sz.y;
+  var rad=sz.length()/2,dist=rad/Math.sin(cam.fov*Math.PI/360)*1.1;cam.position.copy(ctr).addScaledVector(dir,dist);cam.lookAt(ctr);
+  r.render(sc,cam);thumbs[k]=r.domElement.toDataURL('image/png');sc.remove(g);});
+ r.dispose();if(r.forceContextLoss)r.forceContextLoss();}
+function cm(v){return Math.round(v*100);}
+function buildCatalog(){if(catBuilt){updateInventory();return;}catBuilt=true;try{makeThumbs();}catch(e){}
+ var h='';CATS.forEach(function(cg){var ks=typesIn(cg[0]);if(!ks.length)return;h+='<h3>'+cg[1]+'</h3><div class="cards">';
+  ks.forEach(function(k){var ty=TYPES[k];h+='<div class="card">'+(thumbs[k]?'<img class="pic" alt="" src="'+thumbs[k]+'">':'<div class="pic"></div>')+'<div class="b"><div class="nm"><i>'+ty.n+'</i><span>'+ty.name+'</span></div>'+
+   '<div class="meta">'+cm(ty.W)+' × '+cm(ty.D)+(ty.H?' × '+cm(ty.H):'')+' см (ш × г'+(ty.H?' × в':'')+')</div><div class="meta">'+(ty.note||'')+'</div><div class="cnt" data-cnt="'+k+'"></div><button data-add="'+k+'">Добавить в зал</button></div></div>';});
+  h+='</div>';});
+ var cb=document.getElementById('catbox');cb.innerHTML=h;
+ cb.addEventListener('click',function(e){var b=e.target.closest('[data-add]');if(!b)return;showTab('edit');window.__plan.add(b.getAttribute('data-add'));});
+ updateInventory();}
+function updateInventory(){var c=counts();
+ [].forEach.call(document.querySelectorAll('[data-cnt]'),function(el){var n=c[el.getAttribute('data-cnt')]||0;el.textContent=n?'В зале: '+n+' шт.':'В зале нет';el.style.color=n?'':'var(--muted)';});
+ var h='';Object.keys(TYPES).sort(function(a,b){return TYPES[a].n-TYPES[b].n;}).forEach(function(k){if(!c[k])return;var ty=TYPES[k];h+='<li><b>'+ty.n+'</b><span>'+ty.name+(c[k]>1?' — '+c[k]+' шт.':'')+(isFridge(k)?'<small>цвет полок — зона товара</small>':'')+'</span></li>';});
+ leg.innerHTML=h;}
+
+/* ===== Расстановка: схема сверху с перетаскиванием ===== */
+(function(){
+var s=60,ox=2.25,oy=13.3,VW=(ROOM.w+ox+0.8)*s,VH=(oy+2.6)*s;
+function X(l){return (l+ox)*s;}function Y(d){return (oy-d)*s;}
+
+var COLORS={fridge1:'#D6ECF7',selfpos:'#C9CED2',wincounter:'#D9BC8E',table:'#E9DCC4',chair:'#8E959B',trash:'#3B4045',cube:'#F6D9A8',bar:'#D9BC8E',coffee:'#D9BC8E',pos:'#D9BC8E',freezer:'#D6ECF7',rack:'#F0C987',fridge:'#D6ECF7',heat:'#C9CED2',table2:'#E9DCC4',table4:'#E9DCC4',sink:'#C9CED2',barista:'#3B4045'};
+function rect(l0,l1,d0,d1,fill,stroke,extra){var x=Math.min(X(l0),X(l1)),y=Math.min(Y(d0),Y(d1));return '<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+Math.abs(X(l1)-X(l0)).toFixed(1)+'" height="'+Math.abs(Y(d1)-Y(d0)).toFixed(1)+'" fill="'+fill+'" stroke="'+(stroke||'none')+'" stroke-width="1.2" '+(extra||'')+'/>';}
+var wallC='#E9DDB6',wallS='#9C8B60',st=[];
+st.push('<rect x="0" y="'+Y(-0.78)+'" width="'+VW+'" height="'+(1.85*s)+'" fill="#BDB7AF"/>');
+st.push('<text x="'+X(2.34)+'" y="'+Y(-1.75)+'" text-anchor="middle" font-size="15" fill="#1A2836">Московский проспект — тротуар</text>');
+st.push(rect(-1.95,ROOM.w+0.55,0,-0.775,wallC,wallS));                                   // фасад
+st.push(rect(-1.95,-1.75,-0.775,2.2,wallC,wallS));st.push(rect(-1.95,0,2.0,2.2,wallC,wallS)); // стены тамбура
+st.push(rect(-0.12,0,0,13.2,wallC,wallS));st.push(rect(ROOM.w,ROOM.w+0.55,-0.775,13.2,wallC,wallS));
+st.push(rect(0,3.08,ROOM.depth,ROOM.depth+0.3,wallC,wallS));st.push(rect(3.06,3.08,ROOM.depth,13.2,wallC,wallS));
+st.push(rect(-1.75,-0.12,0,2.0,'#F4F1EA','#1A2836'));st.push(rect(0,ROOM.w,0,ROOM.depth,'#F4F1EA','#1A2836'));st.push(rect(3.08,ROOM.w,ROOM.depth,13.2,'#F4F1EA','#1A2836'));
+st.push(rect(-0.12,0,1.05,1.87,'#fff','#1A2836'));st.push(rect(ROOM.w,ROOM.w+0.55,9.1,10.1,'#fff','#1A2836'));
+st.push(rect(DOOR.a,DOOR.b,0,-0.775,'#fff','#1A2836'));
+WIN.forEach(function(w){st.push(rect(w.a,w.b,-0.3,-0.4,'#7EC8E3','#2E86C1'));});
+st.push(rect(1.905,3.315,5.32,6.32,wallC,wallS));st.push(rect(0,0.63,5.32,6.32,wallC,wallS));st.push(rect(0.07,0.72,4.64,5.30,'#D4D8DC','#1A2836'));
+st.push(rect(3.45,4.27,0,0.12,'#fff','#9AA4AD'));st.push(rect(1.11,1.905,0,0.12,'#fff','#9AA4AD'));
+st.push('<text x="'+X(-0.93)+'" y="'+Y(1.1)+'" text-anchor="middle" font-size="13" fill="#1A2836">тамбур</text>');
+st.push('<text x="'+X(-0.95)+'" y="'+Y(-1.2)+'" text-anchor="middle" font-size="14" font-weight="600" fill="#1A2836">↑ вход</text>');
+st.push('<text x="'+X(3.88)+'" y="'+Y(12.4)+'" text-anchor="middle" font-size="13" fill="#5F6B78">к подсобкам</text>');
+st.push('<text x="'+X(2.6)+'" y="'+Y(5.82)+'" dy="4" text-anchor="middle" font-size="12" fill="#5A4310">колонна</text>');
+var box$=document.getElementById('planbox');
+box$.innerHTML='<svg id="plansvg" viewBox="0 0 '+VW.toFixed(0)+' '+VH.toFixed(0)+'" xmlns="http://www.w3.org/2000/svg" font-family="Golos Text, Arial, sans-serif" role="application" aria-label="Схема зала: перетаскивайте предметы">'+st.join('')+'<g id="itemsLayer"></g></svg>';
+var svg=document.getElementById('plansvg'),layer=document.getElementById('itemsLayer');
+var sel=null,drag=null,undo=[];
+var hl=new T.BoxHelper(undefined,0xF2C014);hl.visible=false;scene.add(hl);
+function snap(v){return Math.round(v*20)/20;}
+function dims(it){var ty=TYPES[it.t];return {W:it.t==='rack'?(it.w||ty.W):ty.W,D:ty.D};}
+function itemSVG(it){var ty=TYPES[it.t],dm=dims(it),w=dm.W*s,h=dm.D*s,c=COLORS[it.t],o='';
+ if(it.t==='table2'||it.t==='table4'){o+='<rect x="'+(-w/2)+'" y="'+(-h/2)+'" width="'+w+'" height="'+h+'" fill="transparent"/>';var ch=it.t==='table2'?[[0.55,0],[-0.55,0]]:[[0.55,0],[-0.55,0],[0,0.55],[0,-0.55]];ch.forEach(function(p){o+='<rect x="'+(p[0]*s-12)+'" y="'+(p[1]*s-12)+'" width="24" height="24" rx="3" fill="#8E959B"/>';});o+='<circle r="'+(0.34*s)+'" fill="'+c+'" stroke="#1A2836" stroke-width="1.2"/>';}
+ else if(it.t==='table'){o+='<circle r="'+(0.34*s)+'" fill="'+c+'" stroke="#1A2836" stroke-width="1.2"/>';}
+ else if(it.t==='trash'){o+='<circle r="'+(0.17*s)+'" fill="'+c+'"/>';}
+ else if(it.t==='wincounter'){o+='<rect x="'+(-w/2)+'" y="'+(-h/2)+'" width="'+w+'" height="'+h+'" fill="transparent"/>';[-0.5,0,0.5].forEach(function(x){o+='<circle cx="'+(x*s)+'" cy="'+(-0.2*s)+'" r="'+(0.17*s)+'" fill="#B9A27E"/>';});
+  o+='<rect x="'+(-w/2)+'" y="'+(0.025*s)+'" width="'+w+'" height="'+(0.45*s)+'" fill="'+c+'" stroke="#1A2836" stroke-width="1.2"/><line x1="'+(-w/2+2)+'" y1="'+(0.475*s-2)+'" x2="'+(w/2-2)+'" y2="'+(0.475*s-2)+'" stroke="#1A2836" stroke-width="5"/>';}
+ else if(it.t==='barista'){o+='<ellipse rx="'+(w/2)+'" ry="'+(h/2)+'" fill="#3B4045"/><line x1="0" y1="0" x2="0" y2="'+(h/2+6)+'" stroke="#fff" stroke-width="2"/>';}
+ else{o+='<rect x="'+(-w/2)+'" y="'+(-h/2)+'" width="'+w+'" height="'+h+'" fill="'+(isFridge(it.t)?'#E3F1F8':c)+'" stroke="#1A2836" stroke-width="1.2"/>';
+  o+='<line x1="'+(-w/2+2)+'" y1="'+(h/2-2)+'" x2="'+(w/2-2)+'" y2="'+(h/2-2)+'" stroke="'+(isFridge(it.t)?ZONE[it.zone||'yellow']:'#1A2836')+'" stroke-width="5"/>';}
+ o+='<g transform="rotate('+it.r+')"><circle r="11" fill="#E2B32A" stroke="#1A2836" stroke-width="1.2"/><text dy="4" text-anchor="middle" font-size="12" font-weight="700" fill="#1A2836">'+ty.n+'</text></g>';
+ if(sel===it.id)o+='<rect x="'+(-w/2-5)+'" y="'+(-h/2-5)+'" width="'+(w+10)+'" height="'+(h+10)+'" fill="none" stroke="#2457A6" stroke-width="2.5" stroke-dasharray="6 4"/>';
+ return o;}
+function tf(it){return 'translate('+X(it.x).toFixed(1)+','+Y(it.d).toFixed(1)+') rotate('+(-it.r)+')';}
+function render(){layer.innerHTML='';items.forEach(function(it){var g=document.createElementNS('http://www.w3.org/2000/svg','g');g.setAttribute('class','it');g.setAttribute('data-id',it.id);g.setAttribute('transform',tf(it));g.innerHTML=itemSVG(it);g.style.cursor='grab';layer.appendChild(g);});
+ if(sel!==null&&!items.some(function(i){return i.id===sel;}))sel=null;updateTools();updateHL();updateInventory();}
+function byId(id){for(var i=0;i<items.length;i++)if(items[i].id===id)return items[i];return null;}
+function updateHL(){var it=sel!==null&&byId(sel);if(it&&groups[it.id]){hl.setFromObject(groups[it.id]);hl.visible=true;}else hl.visible=false;}
+function snapshot(){return JSON.stringify(items.map(strip));}
+function strip(it){var o={};for(var k in it)if(k!=='id')o[k]=it[k];return o;}
+function pushUndo(){undo.push(snapshot());if(undo.length>60)undo.shift();document.getElementById('bUndo').disabled=false;}
+function svgPt(e){var p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;var q=p.matrixTransform(svg.getScreenCTM().inverse());return {x:q.x/s-ox,d:oy-q.y/s};}
+layer.addEventListener('pointerdown',function(e){var g=e.target.closest('.it');if(!g)return;var id=+g.getAttribute('data-id'),it=byId(id);sel=id;var p=svgPt(e);drag={it:it,dx:it.x-p.x,dd:it.d-p.d,moved:false,before:snapshot(),g:g};svg.setPointerCapture(e.pointerId);render();drag.g=layer.querySelector('[data-id="'+id+'"]');e.preventDefault();});
+svg.addEventListener('pointermove',function(e){if(!drag)return;var p=svgPt(e),it=drag.it;var nx=snap(p.x+drag.dx),nd=snap(p.d+drag.dd);nx=Math.max(-1.7,Math.min(ROOM.w+0.2,nx));nd=Math.max(-0.7,Math.min(13,nd));if(nx===it.x&&nd===it.d)return;it.x=nx;it.d=nd;drag.moved=true;drag.g.setAttribute('transform',tf(it));place(it);updateHL();});
+function endDrag(){if(!drag)return;if(drag.moved){undo.push(drag.before);if(undo.length>60)undo.shift();document.getElementById('bUndo').disabled=false;save();}drag=null;}
+svg.addEventListener('pointerup',endDrag);svg.addEventListener('pointercancel',endDrag);
+svg.addEventListener('pointerdown',function(e){if(!e.target.closest('.it')){sel=null;render();}});
+function updateTools(){var it=sel!==null&&byId(sel);document.getElementById('selName').textContent=it?TYPES[it.t].name:'Нажмите на предмет на схеме, чтобы его выбрать';
+ ['bCopy','bRot','bRot15','bDel'].forEach(function(id){document.getElementById(id).disabled=!it;});var bz=document.getElementById('bZone');bz.hidden=!(it&&isFridge(it.t));}
+function change(fn){pushUndo();fn();save();}
+document.getElementById('bCopy').onclick=function(){var it=byId(sel);if(!it)return;change(function(){var c=strip(it);c.id=uid++;c.x=snap(Math.min(ROOM.w-0.3,it.x+0.4));c.d=snap(it.d+0.4);items.push(c);buildItem(c);sel=c.id;render();});};
+function rot(a){var it=byId(sel);if(!it)return;change(function(){it.r=((it.r+a)%360+360)%360;place(it);render();});}
+document.getElementById('bRot').onclick=function(){rot(90);};document.getElementById('bRot15').onclick=function(){rot(15);};
+document.getElementById('bDel').onclick=function(){var it=byId(sel);if(!it)return;change(function(){scene.remove(groups[it.id]);delete groups[it.id];items=items.filter(function(i){return i!==it;});sel=null;render();});};
+var ZK=['green','orange','yellow','pink'];
+document.getElementById('bZone').onclick=function(){var it=byId(sel);if(!it)return;change(function(){it.zone=ZK[(ZK.indexOf(it.zone||'yellow')+1)%4];buildItem(it);render();});};
+var at=document.getElementById('addType');CATS.forEach(function(cg){var og=document.createElement('optgroup');og.label=cg[1];typesIn(cg[0]).forEach(function(k){var o=document.createElement('option');o.value=k;o.textContent=TYPES[k].n+'. '+TYPES[k].name;og.appendChild(o);});at.appendChild(og);});
+function addType(t){change(function(){var c={t:t,x:2.6,d:3.4,r:0,id:uid++};if(isFridge(t))c.zone='yellow';items.push(c);buildItem(c);sel=c.id;render();});}
+document.getElementById('bAdd').onclick=function(){addType(at.value);};
+document.getElementById('bUndo').onclick=function(){if(!undo.length)return;var snap0=undo.pop();applyList(JSON.parse(snap0));sel=null;render();save();document.getElementById('bUndo').disabled=!undo.length;};
+document.getElementById('bReset').onclick=function(){change(function(){applyList(DEFAULT_ITEMS);sel=null;render();});};
+function applyList(list){setItems(list);updateHL();}
+document.addEventListener('keydown',function(e){if(!document.getElementById('vplan').classList.contains('on'))return;if(/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;var it=byId(sel);if(!it)return;
+ var st=e.shiftKey?0.25:0.05,mv={ArrowLeft:[-st,0],ArrowRight:[st,0],ArrowUp:[0,st],ArrowDown:[0,-st]}[e.key];
+ if(mv){e.preventDefault();change(function(){it.x=snap(it.x+mv[0]);it.d=snap(it.d+mv[1]);place(it);render();});}
+ else if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();document.getElementById('bDel').click();}
+ else if(e.key==='r'||e.key==='к'){document.getElementById('bRot').click();}
+ else if((e.ctrlKey||e.metaKey)&&(e.key==='d'||e.key==='в'||e.key==='c'||e.key==='с')){e.preventDefault();document.getElementById('bCopy').click();}});
+/* --- сохранение --- */
+var db=null,stateEl=document.getElementById('saveState'),saveT=null,KEY='uppetit-m38-layout';
+function setState(t){stateEl.textContent=t;}
+function save(){clearTimeout(saveT);setState('Сохраняю…');saveT=setTimeout(function(){var data={items:items.map(strip),savedAt:Date.now()};
+ try{localStorage.setItem(KEY,JSON.stringify(data));}catch(e){}
+ if(db){db.doc('layouts/main').set(data).then(function(){setState('Сохранено');},function(){setState('Сохранено только в этом браузере');});}
+ else setState('Сохранено в этом браузере');},500);}
+try{var loc=localStorage.getItem(KEY);if(loc){var L=JSON.parse(loc);if(L&&L.items&&L.items.length)applyList(L.items);}}catch(e){}
+render();
+if(window.claude&&claude.use){claude.use('db').then(function(d){if(!d)return;db=d;return db.doc('layouts/main').get().then(function(snap){if(snap.exists){var v=snap.data();if(v&&v.items&&v.items.length&&!undo.length){applyList(v.items);render();}}setState('Изменения сохраняются автоматически');});}).catch(function(){});}
+window.__plan={render:render,add:addType};
+})();
+})();
+</script>
+</body>
+</html>
