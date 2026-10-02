@@ -62,7 +62,7 @@
         <div class="tools">
           <button class="btn" id="bUndo" disabled>Отменить</button><button class="btn" id="bRedo" disabled>Вернуть</button>
           <span class="sep"></span>
-          <button class="btn sm" id="zIn">+</button><button class="btn sm" id="zOut">−</button><button class="btn sm" id="zHall">Зал</button><button class="btn sm" id="zAll">Весь план</button>
+          <button class="btn sm" id="zIn">+</button><button class="btn sm" id="zOut">−</button><button class="btn sm" id="zHall">Зал</button><button class="btn sm" id="zAll">Весь план</button><button class="btn sm" id="bWalk2" title="Пройтись по залу от первого лица">Прогулка</button>
           <span id="saveState" class="muted small"></span>
         </div>
         <div id="editPlan" class="planbox"></div>
@@ -75,8 +75,16 @@
 
   <!-- 3. Виды -->
   <section class="view" id="v-views">
-    <div class="panel p0 big3d">
-      <div class="slot3d" data-slot="views"></div>
+    <div class="viewsgrid">
+      <div class="panel p0 big3d"><div class="slot3d" data-slot="views"></div></div>
+      <div class="panel">
+        <h2>Пройтись внутри</h2>
+        <div class="walkbtns"><button class="btn primary" id="bWalk">Прогулка</button><button class="btn" id="bTour">Экскурсия по маршруту</button></div>
+        <p class="small muted">Прогулка: W A S D или стрелки — идти, тянуть мышью — оглядеться, двойной клик по полу — перейти туда, клик по мини-карте — перенестись. На телефоне — кнопки внизу справа. Выйти — Esc.</p>
+        <h2 style="margin-top:14px">Варианты планировки</h2>
+        <div id="varList" class="varlist"></div>
+        <div id="varDesc" class="vardesc"></div>
+      </div>
     </div>
   </section>
 

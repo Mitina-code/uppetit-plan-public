@@ -93,7 +93,7 @@
 
   // панель выбранного
   const ZN = { green: 'зелёный — салаты', orange: 'оранжевый — супы', yellow: 'жёлтый — основное', pink: 'розовый — десерты' };
-  const CN = { grey: 'серый', green: 'зелёный', yellow: 'жёлтый', orange: 'оранжевый' };
+  const CN = { grey: 'серый', green: 'зелёный', yellow: 'жёлтый', orange: 'оранжевый', pink: 'розовый' };
   function renderSel() {
     const box = $('#selPanel'), id = plan.getSel();
     if (id == null) { box.innerHTML = '<span class="muted">Нажмите на предмет, окно или дверь на схеме, чтобы выбрать.</span>'; return; }
@@ -323,6 +323,29 @@
   const plural = (n, a, b, c) => { const m = n % 100, k = n % 10; return n + ' ' + (m > 10 && m < 20 ? c : k === 1 ? a : k >= 2 && k <= 4 ? b : c); };
   function setName() { $('#projName').textContent = (P.name || 'Проект') + ' · ' + plural((P.items || []).length, 'предмет', 'предмета', 'предметов'); }
 
+  /* ---------- варианты планировки и прогулка ---------- */
+  let variants = [];
+  async function loadVariants() { try { variants = await (await fetch('data/variants.json', { cache: 'no-store' })).json(); } catch (e) { variants = []; } renderVariants(); }
+  function renderVariants() {
+    const box = $('#varList'); if (!box) return; box.innerHTML = '';
+    variants.forEach(v => { const b = document.createElement('button'); b.className = 'varbtn'; b.setAttribute('aria-pressed', P && P.variant === v.id ? 'true' : 'false'); b.innerHTML = '<b>' + v.name + '</b><span>' + v.summary + '</span>'; b.onclick = () => pickVariant(v); box.appendChild(b); });
+    const cur = variants.find(v => P && v.id === P.variant);
+    $('#varDesc').innerHTML = cur ? '<b>Что сделано и почему</b><ul>' + cur.points.map(t => '<li>' + t + '</li>').join('') + '</ul>' : '<p class="small muted">Сейчас открыт ваш собственный проект. Выберите вариант, чтобы сравнить (текущий можно вернуть кнопкой «Отменить» на вкладке «Расстановка»).</p>';
+  }
+  async function pickVariant(v) {
+    if (P && P.variant === v.id) return;
+    const np = await (await fetch(v.file, { cache: 'no-store' })).json();
+    np.facade = P && P.facade ? P.facade : np.facade; // разметка фото фасада общая
+    undo.push(snap()); redo = []; updUndo();
+    P = np; save(); scene.setInterior(P.interior || 'grib-color'); scene.build(P); rebuildPresets(); plan.setProject(P); setName(); renderVariants();
+    const vw = scene.views().find(x => x.id === 'x0') || scene.views().find(x => x.id === 'door'); if (vw) { curView = vw.id; scene.go(vw); markPreset(); }
+    toast(v.name + ' — открыт');
+  }
+  function startWalk() { if (tab !== 'views' && tab !== 'edit') showTab('views'); scene.walkStart(); }
+  $('#bWalk').onclick = startWalk; $('#bWalk2').onclick = startWalk;
+  $('#bTour').onclick = () => { if (tab !== 'views') showTab('views'); const path = P.tour; if (!path) { toast('Для этого проекта маршрута нет — включаю прогулку'); return scene.walkStart(); } scene.tour(path); };
+  scene.onWalk(on => { v3d.classList.toggle('walking', on); $('#bWalk').textContent = on ? 'Идёт прогулка' : 'Прогулка'; });
+
   /* ---------- запуск ---------- */
   let underlay = null;
   (async function init() {
@@ -339,7 +362,7 @@
     showTab(t0);
     const v = scene.views().find(x => x.id === 'walk'); if (v) { curView = v.id; scene.go(v, true); markPreset(); }
     setTimeout(() => plan.focusHall(scene.getHall()), 50);
-    renderSel();
+    renderSel(); loadVariants();
     window.__app = { get P() { return P; }, scene, plan, showTab, facade };
   })();
 })();

@@ -457,6 +457,36 @@
     };
   }
 
+  /* снос и возведение стен: контуры → сетка 2,5 см → правки прямоугольниками → снова контуры.
+     edits: [{ op: 'cut' | 'add', r: [x0, y0, x1, y1] }] */
+  function editWalls(rings, edits, res) {
+    res = res || 0.025;
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    rings.forEach(r => r.forEach(p => { x0 = Math.min(x0, p[0]); y0 = Math.min(y0, p[1]); x1 = Math.max(x1, p[0]); y1 = Math.max(y1, p[1]); }));
+    (edits || []).forEach(e => { x0 = Math.min(x0, e.r[0]); y0 = Math.min(y0, e.r[1]); x1 = Math.max(x1, e.r[2]); y1 = Math.max(y1, e.r[3]); });
+    const gx0 = Math.floor(x0 / res), gy0 = Math.floor(y0 / res), nx = Math.ceil(x1 / res) - gx0 + 1, ny = Math.ceil(y1 / res) - gy0 + 1;
+    const grid = new Uint8Array(nx * ny);
+    // заливка по чётности пересечений (контуры с дырами)
+    for (let j = 0; j < ny; j++) {
+      const y = (gy0 + j + 0.5) * res, xs = [];
+      rings.forEach(r => { for (let i = 0, k = r.length - 1; i < r.length; k = i++) { const a = r[i], b = r[k]; if ((a[1] > y) !== (b[1] > y)) xs.push(a[0] + (y - a[1]) * (b[0] - a[0]) / (b[1] - a[1])); } });
+      xs.sort((a, b) => a - b);
+      for (let q = 0; q + 1 < xs.length; q += 2) { const i0 = Math.max(0, Math.ceil(xs[q] / res - 0.5) - gx0), i1 = Math.min(nx - 1, Math.floor(xs[q + 1] / res - 0.5) - gx0); for (let i = i0; i <= i1; i++) grid[j * nx + i] = 1; }
+    }
+    (edits || []).forEach(e => { const v = e.op === 'add' ? 1 : 0; const i0 = Math.max(0, Math.round(e.r[0] / res) - gx0), i1 = Math.min(nx, Math.round(e.r[2] / res) - gx0), j0 = Math.max(0, Math.round(e.r[1] / res) - gy0), j1 = Math.min(ny, Math.round(e.r[3] / res) - gy0); for (let j = j0; j < j1; j++) for (let i = i0; i < i1; i++) grid[j * nx + i] = v; });
+    // строки → прямоугольники, одинаковые подряд по вертикали склеиваем
+    const rects = [], open = new Map();
+    for (let j = 0; j <= ny; j++) {
+      const runs = [];
+      if (j < ny) { let i = 0; while (i < nx) { if (grid[j * nx + i]) { const s = i; while (i < nx && grid[j * nx + i]) i++; runs.push(s + ':' + i); } else i++; } }
+      const now = new Set(runs);
+      open.forEach((jStart, key) => { if (!now.has(key)) { const [s, e] = key.split(':').map(Number); rects.push([(gx0 + s) * res, (gy0 + jStart) * res, (gx0 + e) * res, (gy0 + j) * res]); open.delete(key); } });
+      runs.forEach(k => { if (!open.has(k)) open.set(k, j); });
+    }
+    const rr = rects.map(r => [[r[0], r[1]], [r[2], r[1]], [r[2], r[3]], [r[0], r[3]]].map(p => [+p[0].toFixed(4), +p[1].toFixed(4)]));
+    return unionRings(rr).map(l => l.map(p => [+p[0].toFixed(4), +p[1].toFixed(4)]));
+  }
+
   // результат распознавания → проект (то, что редактирует и показывает приложение)
   function toProject(res, name) {
     let uid = 1;
@@ -476,6 +506,6 @@
     };
   }
 
-  const api = { extract, recognize, toProject, findScale, layerStats, inRing, area };
+  const api = { extract, recognize, toProject, editWalls, unionRings, findScale, layerStats, inRing, area };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.PlanRec = api;
 })(typeof window !== 'undefined' ? window : this);

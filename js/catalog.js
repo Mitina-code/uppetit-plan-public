@@ -43,8 +43,22 @@
     { id: 'trash', n: 27, cat: 'misc', name: 'Урна', W: 0.36, D: 0.36, H: 0.66, model: 'trash', src: 'чертёж: «+ урна»', note: '' },
     { id: 'person', n: 28, cat: 'misc', name: 'Сотрудник (для масштаба)', W: 0.45, D: 0.30, H: 1.75, model: 'person', src: '', note: 'Чёрная футболка — как у персонала Uppetit.' }
   ];
+  // оформление: то, что делает проходы и залы живыми (по приёмам Uppetit и примерам кафе с длинными проходами)
+  TYPES.push(
+    { id: 'banquette', n: 29, cat: 'decor', name: 'Диван-банкетка', W: 2.40, D: 0.55, H: 0.85, custom: { w: [0.8, 6] }, model: 'banquette', color: true, src: 'посадка в глубине зала (как в нишах Din Tai Fung)', note: 'Заказная: длина по стене. Мягкое сиденье цвета зоны.' },
+    { id: 'neon', n: 30, cat: 'decor', name: 'Неоновая надпись', W: 1.60, D: 0.03, H: 0.32, elev: 2.05, custom: { w: [0.4, 4] }, model: 'neon', text: true, src: 'надпись «сделано с аппетитом» — из залов Uppetit', note: 'Светится; текст меняется. Ставится на стену.' },
+    { id: 'poster', n: 31, cat: 'decor', name: 'Постер в раме', W: 0.60, D: 0.03, H: 0.85, elev: 1.15, model: 'poster', color: true, src: 'постеры в залах Uppetit', note: 'Яркий фон, блюдо. Хорош рядами вдоль прохода.' },
+    { id: 'mural', n: 32, cat: 'decor', name: 'Панно «шахматка» с едой', W: 2.40, D: 0.02, H: 1.80, elev: 0.9, custom: { w: [0.6, 8], h: [0.6, 2.4] }, model: 'mural', src: 'цветная стена Uppetit (Грибалёвой, 7)', note: 'Заказное: ширина и высота по стене.' },
+    { id: 'portal', n: 33, cat: 'decor', name: 'Цветной портал на проход', W: 1.40, D: 0.30, H: 2.40, custom: { w: [0.7, 3] }, model: 'portal', color: true, src: 'приём «входная арка» — проход видно издалека', note: 'Рамка цвета зоны вокруг проёма — зовёт пройти дальше.' },
+    { id: 'stripe', n: 34, cat: 'decor', name: 'Цветная полоса на полу', W: 4.00, D: 0.30, H: 0.01, custom: { w: [0.5, 15] }, model: 'stripe', src: 'навигация цветом, как зоны Uppetit', note: 'Ведёт гостя к посадке. Длина любая.' },
+    { id: 'plant', n: 35, cat: 'decor', name: 'Растение в кашпо', W: 0.50, D: 0.50, H: 1.30, model: 'plant', src: 'зелень в залах Uppetit', note: '' },
+    { id: 'longtable', n: 37, cat: 'seat', name: 'Общий длинный стол', W: 2.40, D: 0.80, H: 0.75, custom: { w: [1.2, 5] }, model: 'longtable', src: 'общий стол в нише (как у Din Tai Fung)', note: 'Заказной: длина под компанию. Светлое дерево, чёрные опоры.' },
+    { id: 'pendant', n: 36, cat: 'decor', name: 'Подвесная лампа-«груша»', W: 0.20, D: 0.20, H: 3.40, model: 'pendant', src: 'свет в залах Uppetit', note: 'Висит над столом; низ лампы на 1,9 м.' }
+  );
+  CATS.splice(3, 0, ['decor', 'Оформление']);
   const BY = {}; TYPES.forEach(t => BY[t.id] = t);
-  const CHAIR_COLORS = { grey: '#8E959B', green: '#8DB33A', yellow: '#E7B92E', orange: '#E8612C' };
+  const NOCOLLIDE = { chair: 1, stool: 1, person: 1, stripe: 1, neon: 1, poster: 1, mural: 1, pendant: 1, tv: 1, portal: 1 };
+  const CHAIR_COLORS = { grey: '#8E959B', green: '#8DB33A', yellow: '#E7B92E', orange: '#E8612C', pink: '#E87FA2' };
 
   function dims(it) {
     const t = BY[it.t] || BY.generic, c = t.custom || {};
@@ -56,7 +70,7 @@
   function build(T, it, U) {
     const t = BY[it.t] || BY.generic, d = dims(it), g = new T.Group();
     const M = (c, o) => new T.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.7 }, o || {}));
-    const elev = it.on ? (BY.prodTable.H) : (t.elev || 0);
+    const elev = it.on ? (BY.prodTable.H) : (it.elev != null ? it.elev : (t.elev || 0));
     if (!t.model) {
       const opts = Object.assign({}, t.opts || {}, { zone: it.zone || (t.zone ? 'yellow' : undefined), label: it.label });
       g.add(texBox(T, U, t.id, d.W, d.H, d.D, t.faces, opts, t.alpha, 0, elev, 0));
@@ -81,6 +95,44 @@
       [-1, 1].forEach(s => { const l = new T.Mesh(new T.BoxGeometry(0.05, 1.01, 0.05), blk); l.position.set(s * (d.W / 2 - 0.12), 0.505, 0); g.add(l); const f = new T.Mesh(new T.BoxGeometry(0.05, 0.03, d.D * 0.9), blk); f.position.set(s * (d.W / 2 - 0.12), 0.015, 0); g.add(f); });
     } else if (t.model === 'trash') {
       const m = M('#3B4045', { roughness: 0.5, metalness: 0.3 }); const c = new T.Mesh(new T.CylinderGeometry(0.17, 0.15, 0.62, 24), m); c.position.y = 0.31; g.add(c); const l = new T.Mesh(new T.CylinderGeometry(0.18, 0.18, 0.04, 24), M('#9AA1A7', { metalness: 0.6, roughness: 0.3 })); l.position.y = 0.64; g.add(l);
+    } else if (t.model === 'longtable') {
+      const top = new T.Mesh(new T.BoxGeometry(d.W, 0.04, d.D), new T.MeshStandardMaterial({ map: U.tex(T, 'wood', d.W, d.D), roughness: 0.55 })); top.position.y = 0.73; g.add(top);
+      const blk = M('#1E2124', { roughness: 0.45, metalness: 0.3 });
+      [-1, 1].forEach(s0 => { const l = new T.Mesh(new T.BoxGeometry(0.06, 0.71, d.D * 0.8), blk); l.position.set(s0 * (d.W / 2 - 0.2), 0.355, 0); g.add(l); });
+      const bar = new T.Mesh(new T.BoxGeometry(d.W - 0.4, 0.05, 0.05), blk); bar.position.y = 0.2; g.add(bar);
+    } else if (t.model === 'banquette') {
+      const col = CHAIR_COLORS[it.color] || it.color || CHAIR_COLORS.green, cush = M(col, { roughness: 0.95 }), wood = new T.MeshStandardMaterial({ map: U.tex(T, 'wood', d.W, 0.3), roughness: 0.6 });
+      const base = new T.Mesh(new T.BoxGeometry(d.W, 0.36, d.D - 0.05), wood); base.position.set(0, 0.18, 0.02); g.add(base);
+      const pl = new T.Mesh(new T.BoxGeometry(d.W, 0.06, d.D - 0.1), M('#1E2124')); pl.position.set(0, 0.03, 0.05); g.add(pl);
+      const seat = new T.Mesh(new T.BoxGeometry(d.W - 0.02, 0.1, d.D - 0.12), cush); seat.position.set(0, 0.41, 0.05); g.add(seat);
+      const n = Math.max(1, Math.round(d.W / 0.6));
+      for (let i = 0; i < n; i++) { const w = d.W / n - 0.02; const b = new T.Mesh(new T.BoxGeometry(w, 0.4, 0.12), cush); b.position.set(-d.W / 2 + (i + 0.5) * d.W / n, 0.68, -d.D / 2 + 0.08); b.rotation.x = -0.1; g.add(b); }
+    } else if (t.model === 'neon') {
+      const tx = U.tex(T, 'neon', d.W, d.H, { text: it.text || 'сделано с аппетитом', color: it.color || '#FF6FAE' });
+      const m = new T.Mesh(new T.PlaneGeometry(d.W, d.H), new T.MeshBasicMaterial({ map: tx, transparent: true, depthWrite: false, toneMapped: false }));
+      m.position.set(0, elev + d.H / 2, 0.02); g.add(m);
+    } else if (t.model === 'poster') {
+      const col = CHAIR_COLORS[it.color] || it.color || ['#F39200', '#F07EB0', '#3BAA35', '#F5C400'][Math.abs(it.id || 0) % 4];
+      const fr = new T.Mesh(new T.BoxGeometry(d.W + 0.04, d.H + 0.04, 0.025), M('#1E2124')); fr.position.set(0, elev + d.H / 2, 0.012); g.add(fr);
+      const p = new T.Mesh(new T.PlaneGeometry(d.W, d.H), new T.MeshStandardMaterial({ map: U.tex(T, 'poster', d.W, d.H, { color: col, i: Math.abs(it.id || 0) % 3 }), roughness: 0.6 })); p.position.set(0, elev + d.H / 2, 0.027); g.add(p);
+    } else if (t.model === 'mural') {
+      const p = new T.Mesh(new T.PlaneGeometry(d.W, d.H), new T.MeshStandardMaterial({ map: U.tex(T, 'muralFood', d.W, d.H, { cols: Math.max(1, Math.round(d.W / 0.6)), rows: Math.max(1, Math.round(d.H / 0.6)) }), roughness: 0.8 })); p.position.set(0, elev + d.H / 2, 0.012); g.add(p);
+    } else if (t.model === 'portal') {
+      const col = CHAIR_COLORS[it.color] || it.color || '#F39200', m = M(col, { roughness: 0.6 }), th = 0.12;
+      [-1, 1].forEach(s0 => { const p = new T.Mesh(new T.BoxGeometry(th, d.H, d.D), m); p.position.set(s0 * (d.W / 2 + th / 2), d.H / 2, 0); g.add(p); });
+      const top = new T.Mesh(new T.BoxGeometry(d.W + th * 2, th, d.D), m); top.position.set(0, d.H + th / 2, 0); g.add(top);
+    } else if (t.model === 'stripe') {
+      const p = new T.Mesh(new T.PlaneGeometry(d.W, d.D), new T.MeshStandardMaterial({ map: U.tex(T, 'floorStripe', d.W, d.D), roughness: 0.5, transparent: true })); p.rotation.x = -Math.PI / 2; p.position.y = 0.004; p.receiveShadow = true; g.add(p);
+    } else if (t.model === 'plant') {
+      const pot = new T.Mesh(new T.CylinderGeometry(0.22, 0.17, 0.42, 20), M('#F4F4F2', { roughness: 0.5 })); pot.position.y = 0.21; g.add(pot);
+      const lm = [M('#2F6B2A', { roughness: 0.7 }), M('#3E7D33', { roughness: 0.7 }), M('#4F8F3C', { roughness: 0.7 })];
+      const lg = new T.SphereGeometry(0.1, 10, 8); for (let k = 0; k < 60; k++) { const l = new T.Mesh(lg, lm[k % 3]); l.scale.set(1.3, 0.28, 0.55); const a = k * 2.4, h0 = 0.45 + (k % 12) * 0.065, r0 = 0.05 + (k % 7) * 0.035 * (1.2 - (h0 - 0.45)); l.position.set(Math.cos(a) * r0, h0, Math.sin(a) * r0); l.rotation.set(0, -a, -0.5 - (k % 4) * 0.15); g.add(l); }
+    } else if (t.model === 'pendant') {
+      const ceil = root.UCat.ceilH || 3.4, low = it.elev != null ? it.elev : 1.9;
+      const w = new T.Mesh(new T.CylinderGeometry(0.004, 0.004, ceil - low - 0.12, 4), M('#111')); w.position.y = (ceil + low + 0.12) / 2; g.add(w);
+      const cap = new T.Mesh(new T.CylinderGeometry(0.02, 0.025, 0.05, 10), M('#1E2124')); cap.position.y = low + 0.14; g.add(cap);
+      const b = new T.Mesh(new T.SphereGeometry(0.07, 16, 12), new T.MeshBasicMaterial({ color: '#FFE2B0', toneMapped: false })); b.scale.y = 1.25; b.position.y = low + 0.05; g.add(b);
+      if (U.halo) { const h = new T.Sprite(new T.SpriteMaterial({ map: U.halo(T), color: '#FFC870', transparent: true, depthWrite: false, blending: T.AdditiveBlending })); h.scale.set(0.55, 0.55, 1); h.position.y = low + 0.05; g.add(h); }
     } else if (t.model === 'person') {
       const legs = new T.Mesh(new T.CylinderGeometry(0.13, 0.11, 0.9, 12), M('#3A3F46')); legs.position.y = 0.45; g.add(legs);
       const body = new T.Mesh(new T.CylinderGeometry(0.18, 0.15, 0.62, 16), M('#1D2024')); body.position.y = 1.21; g.add(body);
@@ -88,8 +140,8 @@
       const head = new T.Mesh(new T.SphereGeometry(0.11, 18, 14), M('#E2B996')); head.position.y = 1.65; g.add(head);
       const hair = new T.Mesh(new T.SphereGeometry(0.115, 18, 10, 0, Math.PI * 2, 0, Math.PI / 2), M('#4A3426')); hair.position.y = 1.67; g.add(hair);
     }
-    g.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
-    g.userData = { item: it, H: d.H + elev };
+    g.traverse(o => { if (o.isMesh && !(t.model === 'neon' || t.model === 'stripe' || (o.material && o.material.isMeshBasicMaterial))) { o.castShadow = true; o.receiveShadow = true; } });
+    g.userData = { item: it, H: t.model === 'pendant' ? 2.1 : d.H + elev };
     return g;
   }
   function chair(T, U, color) {
@@ -117,5 +169,5 @@
     return m;
   }
 
-  root.UCat = { CATS, TYPES, BY, dims, build, CHAIR_COLORS };
+  root.UCat = { CATS, TYPES, BY, dims, build, CHAIR_COLORS, NOCOLLIDE, ceilH: 3.4 };
 })(window);

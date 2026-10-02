@@ -68,7 +68,7 @@
     const pm = new T.PMREMGenerator(renderer);
     const envTex = T.RoomEnvironment ? pm.fromScene(new T.RoomEnvironment(), 0.04).texture : null;
     // отражения окружения — только стеклу и металлу (на матовых поверхностях они «засвечивают» картинку)
-    function applyEnv(root3) { if (!envTex) return; root3.traverse(o => { if (!o.material) return; [].concat(o.material).forEach(m => { if (m.envMap || !(m.metalness > 0.2 || m.transparent || (m.roughness != null && m.roughness < 0.32))) return; m.envMap = envTex; m.envMapIntensity = m.transparent ? 1.2 : 0.7; m.needsUpdate = true; }); }); }
+    function applyEnv(root3) { if (!envTex) return; root3.traverse(o => { if (!o.material) return; [].concat(o.material).forEach(m => { if (m.envMap || m.isMeshBasicMaterial || m.isSpriteMaterial || !(m.metalness > 0.2 || m.transparent || (m.roughness != null && m.roughness < 0.32))) return; m.envMap = envTex; m.envMapIntensity = m.transparent ? 1.2 : 0.7; m.needsUpdate = true; }); }); }
     // небо
     const skyC = document.createElement('canvas'); skyC.width = 4; skyC.height = 256; const sg = skyC.getContext('2d'); const gr = sg.createLinearGradient(0, 0, 0, 256); gr.addColorStop(0, '#8FB3D4'); gr.addColorStop(0.55, '#CFDDE8'); gr.addColorStop(1, '#E8EEF2'); sg.fillStyle = gr; sg.fillRect(0, 0, 4, 256);
     const skyT = new T.CanvasTexture(skyC); skyT.encoding = T.sRGBEncoding;
@@ -92,7 +92,7 @@
     function box(w, h, d, mat, x, y, z, ry, parent) { const m = new T.Mesh(new T.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); if (ry) m.rotation.y = ry; m.castShadow = true; m.receiveShadow = true; (parent || roots.arch).add(m); return m; }
 
     function build(p) {
-      project = p; rings = allRings(p); fac = facadeInfo(p); hall = hallInfo(p, rings);
+      project = p; rings = allRings(p); fac = facadeInfo(p); hall = hallInfo(p, rings); C.ceilH = p.H || 3.4;
       ['arch', 'ads', 'sign', 'lights', 'street', 'upper'].forEach(k => clear(roots[k]));
       buildArch(); buildStreet(); buildUpper(); buildSign(); buildLights(); buildItems(); setAds(p.ads !== false); applyEnv(scene);
       const b = p.bounds || { w: 10, h: 10 };
@@ -112,7 +112,8 @@
       rings.forEach(r => (area(r) > 0 ? outers : holes).push(r));
       const shapes = outers.map(o => ({ o, h: [] }));
       holes.forEach(h => { const host = shapes.filter(s => inRing(h[0], s.o)).sort((a, b) => Math.abs(area(a.o)) - Math.abs(area(b.o)))[0]; if (host) host.h.push(h); });
-      const wallM = surf(it.wall), capM = M('#2A2D30'), facM = surf(['facadeYellow', 2.2], { roughness: 0.9 }), accM = it.accent ? surf(it.accent) : wallM;
+      const accent = project.accent === false ? null : it.accent;
+      const wallM = surf(it.wall), capM = M('#2A2D30'), facM = surf(['facadeYellow', 2.2], { roughness: 0.9 }), accM = accent ? surf(accent) : wallM;
       const geos = [];
       shapes.forEach(s => {
         const sh = new T.Shape(s.o.map(q => new T.Vector2(q[0], -q[1])));
@@ -132,7 +133,7 @@
           let k = 1;
           if (Math.abs(nn.y) > 0.9) k = 0;
           else if (fac && nn.z > 0.9 && Math.abs((a.z + b.z + c.z) / 3 - fac.y) < 0.06) k = 2;
-          else if (it.accent && accX != null && Math.abs(nn.x) > 0.9 && Math.abs((a.x + b.x + c.x) / 3 - accX) < 0.08 && Math.max(a.z, b.z, c.z) > accZ0 && Math.min(a.z, b.z, c.z) < hall.inner) k = 3;
+          else if (accent && accX != null && Math.abs(nn.x) > 0.9 && Math.abs((a.x + b.x + c.x) / 3 - accX) < 0.08 && Math.max(a.z, b.z, c.z) > accZ0 && Math.min(a.z, b.z, c.z) < hall.inner) k = 3;
           buckets[k].push(i);
         }
         const P = [], UV = [], groups = []; let off = 0;
@@ -140,7 +141,7 @@
         const ng = new T.BufferGeometry(); ng.setAttribute('position', new T.Float32BufferAttribute(P, 3)); ng.setAttribute('uv', new T.Float32BufferAttribute(UV, 2)); ng.computeVertexNormals(); groups.forEach(q => ng.addGroup(q[0], q[1], q[2]));
         const mesh = new T.Mesh(ng, [capM, wallM, facM, accM]); mesh.castShadow = true; mesh.receiveShadow = true; roots.arch.add(mesh);
       });
-      [[wallM, it.wall[1]], [facM, 2.2], [accM, it.accent ? it.accent[1] : it.wall[1]]].forEach(([m, tile]) => { if (m.map) m.map.repeat.set(1 / tile, 1 / tile); });
+      [[wallM, it.wall[1]], [facM, 2.2], [accM, accent ? accent[1] : it.wall[1]]].forEach(([m, tile]) => { if (m.map) m.map.repeat.set(1 / tile, 1 / tile); });
       // проёмы: подоконник, перемычка, рама, стекло, дверное полотно
       (project.openings || []).forEach(o => buildOpening(o, H, wallM, facM));
       // цоколь и карниз первого этажа
@@ -151,7 +152,7 @@
       // постеры и растения
       if (it.posters && hall) { [[hall.x0 + 0.02, hall.inner - hall.depth * 0.55, Math.PI / 2, '#F39200', 0], [hall.x0 + 0.02, hall.inner - hall.depth * 0.75, Math.PI / 2, '#F07EB0', 1]].forEach(q => { const pm = new T.Mesh(new T.PlaneGeometry(0.7, 1.0), new T.MeshStandardMaterial({ map: U.tex(T, 'poster', 0.7, 1.0, { color: q[3], i: q[4] }) })); pm.position.set(q[0], 1.7, q[1]); pm.rotation.y = q[2]; roots.arch.add(pm); }); }
       if (it.ducts && hall) { const dm = M('#55595D', { metalness: 0.5, roughness: 0.4 }); const L = hall.depth; const d1 = new T.Mesh(new T.CylinderGeometry(0.16, 0.16, L, 16), dm); d1.rotation.x = Math.PI / 2; d1.position.set(hall.x0 + (hall.x1 - hall.x0) * 0.3, H - 0.32, hall.inner - L / 2); roots.arch.add(d1); }
-      if (it.plants && hall) { for (let i = 0; i < 3; i++) { const pg = new T.Group(); const pot = new T.Mesh(new T.CylinderGeometry(0.22, 0.16, 0.22, 16), M('#F4F4F2')); pg.add(pot); for (let k = 0; k < 46; k++) { const l = new T.Mesh(new T.ConeGeometry(0.035, 0.16, 5), M(['#2F6B2A', '#3E7D33', '#4F8F3C', '#24561F'][k % 4], { roughness: 0.7 })); const a = Math.random() * 6.28, r0 = 0.08 + Math.random() * 0.2; l.position.set(Math.cos(a) * r0, -0.02 - Math.random() * 0.7, Math.sin(a) * r0); l.rotation.set(Math.PI + (Math.random() - 0.5) * 0.8, a, (Math.random() - 0.5) * 0.8); pg.add(l); } pg.position.set(hall.x0 + (hall.x1 - hall.x0) * (0.2 + i * 0.3), H - 0.7, hall.inner - 1.2 - i * 1.6); roots.arch.add(pg); } }
+      if (it.plants && hall) { for (let i = 0; i < 3; i++) { const pg = new T.Group(); const pot = new T.Mesh(new T.CylinderGeometry(0.22, 0.16, 0.22, 16), M('#F4F4F2')); pg.add(pot); for (let k = 0; k < 70; k++) { const l = new T.Mesh(new T.SphereGeometry(0.06, 8, 6), M(['#2F6B2A', '#3E7D33', '#4F8F3C', '#24561F'][k % 4], { roughness: 0.75 })); l.scale.set(1, 0.35, 0.6); const a = k * 2.4, r0 = 0.06 + (k % 9) * 0.03; l.position.set(Math.cos(a) * r0, 0.05 - (k % 11) * 0.07, Math.sin(a) * r0); l.rotation.set((k % 5) * 0.4, a, (k % 3) * 0.5); pg.add(l); } pg.position.set(hall.x0 + (hall.x1 - hall.x0) * (0.2 + i * 0.3), H - 0.7, hall.inner - 1.2 - i * 1.6); roots.arch.add(pg); } }
     }
 
     function buildOpening(o, H, wallM, facM) {
@@ -228,17 +229,32 @@
       m.position.set((x0 + x1) / 2, Math.min(H - h / 2 - 0.12, top + 0.25 + h / 2), fac.y + 0.04); m.castShadow = true; roots.sign.add(m);
     }
 
-    function haloTex() { if (haloTex.t) return haloTex.t; const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'); const gr = g.createRadialGradient(32, 32, 2, 32, 32, 32); gr.addColorStop(0, 'rgba(255,255,255,.9)'); gr.addColorStop(0.25, 'rgba(255,220,160,.35)'); gr.addColorStop(1, 'rgba(255,200,120,0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); haloTex.t = new T.CanvasTexture(c); return haloTex.t; }
+    function haloTexOld() { if (haloTexOld.t) return haloTexOld.t; const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'); const gr = g.createRadialGradient(32, 32, 2, 32, 32, 32); gr.addColorStop(0, 'rgba(255,255,255,.9)'); gr.addColorStop(0.25, 'rgba(255,220,160,.35)'); gr.addColorStop(1, 'rgba(255,200,120,0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); haloTex.t = new T.CanvasTexture(c); return haloTex.t; }
+    // где внутри помещений можно стоять: сетка 0,5 м (для света, прогулки и мини-карты)
+    let cells = [];
+    function interiorCells() {
+      const b = project.bounds || { w: 10, h: 10 }, out = [];
+      const DIRS = [0, 45, 90, 135, 180, 225, 270, 315].map(a => [Math.cos(a * Math.PI / 180), Math.sin(a * Math.PI / 180)]);
+      for (let x = 0.25; x < b.w; x += 0.5) for (let y = 0.25; y < Math.max(b.h, project.facadeY || 0); y += 0.5) {
+        if (rings.some(r => inRing([x, y], r))) continue;
+        if (DIRS.filter(d => rayHit([x, y], d, rings) < 40).length < 7) continue;
+        out.push([x, y]);
+      }
+      return out;
+    }
     function buildLights() {
-      if (!hall) return; const H = project.H || 3.4, it = interior;
-      // точечный свет над залом: сетка, только внутри помещений
-      const pts = [];
-      for (let z = hall.inner - 0.9; z > hall.inner - Math.min(hall.depth, 14); z -= 2.2) for (let x = hall.x0 + 0.9; x < hall.x1; x += 2.0) { if (!rings.some(r => inRing([x, z], r))) pts.push([x, z]); }
-      pts.slice(0, 8).forEach(p => { const l = new T.PointLight('#FFE9CF', 1.0, 9, 1.4); l.position.set(p[0], H - 0.5, p[1]); roots.lights.add(l); });
-      const fixtures = [];
-      if (it.lights === 'track') { const bm = M('#16181A', { roughness: 0.4 }); [hall.x0 + (hall.x1 - hall.x0) * 0.3, hall.x0 + (hall.x1 - hall.x0) * 0.7].forEach(x => { box(0.04, 0.03, Math.min(hall.depth, 12), bm, x, H - 0.02, hall.inner - Math.min(hall.depth, 12) / 2, 0, roots.lights); for (let z = hall.inner - 0.6; z > hall.inner - Math.min(hall.depth, 12); z -= 1.1) { const s = new T.Mesh(new T.CylinderGeometry(0.045, 0.045, 0.14, 12), bm); s.position.set(x, H - 0.12, z); s.rotation.x = 0.4; roots.lights.add(s); const b = new T.Mesh(new T.CircleGeometry(0.04, 12), new T.MeshBasicMaterial({ color: '#FFF4D8' })); b.position.set(x, H - 0.19, z + 0.03); b.rotation.x = Math.PI / 2 + 0.4; roots.lights.add(b); } }); }
-      if (it.lights === 'bulbs') { const wire = M('#111'), bulbM = new T.MeshBasicMaterial({ color: '#FFE2B0' }), haloM = new T.SpriteMaterial({ map: haloTex(), color: '#FFC870', transparent: true, depthWrite: false, blending: T.AdditiveBlending }); pts.concat(pts.map(p => [p[0] + 0.7, p[1] - 0.6])).slice(0, 16).forEach((p, i) => { const len = 0.8 + (i % 3) * 0.35; box(0.008, len, 0.008, wire, p[0], H - len / 2, p[1], 0, roots.lights); const b = new T.Mesh(new T.SphereGeometry(0.07, 16, 12), bulbM); b.scale.y = 1.25; b.position.set(p[0], H - len - 0.07, p[1]); roots.lights.add(b); const hs = new T.Sprite(haloM); hs.scale.set(0.5, 0.5, 1); hs.position.copy(b.position); roots.lights.add(hs); }); }
-      if (it.lights === 'linear') { const lm = new T.MeshBasicMaterial({ color: '#F6FAFF' }); [hall.x0 + (hall.x1 - hall.x0) * 0.33, hall.x0 + (hall.x1 - hall.x0) * 0.67].forEach(x => box(0.06, 0.04, Math.min(hall.depth, 12) * 0.85, lm, x, H - 0.25, hall.inner - Math.min(hall.depth, 12) / 2, 0, roots.lights)); }
+      const H = project.H || 3.4, it = interior; cells = interiorCells();
+      // свет во всех помещениях: точки подальше друг от друга, первая — в торговом зале
+      const pts = [], start = hall ? [hall.cx, hall.inner - 1.2] : (cells[0] || [1, 1]);
+      if (cells.length) { pts.push(cells.slice().sort((p, q) => Math.hypot(p[0] - start[0], p[1] - start[1]) - Math.hypot(q[0] - start[0], q[1] - start[1]))[0]); }
+      while (pts.length < 14 && cells.length) { let best = null, bd = 0; cells.forEach(c => { const d = Math.min(...pts.map(p => Math.hypot(p[0] - c[0], p[1] - c[1]))); if (d > bd) { bd = d; best = c; } }); if (!best || bd < 1.6) break; pts.push(best); }
+      pts.forEach(p => { const l = new T.PointLight('#FFE9CF', 0.85, 7.5, 1.4); l.position.set(p[0], H - 0.5, p[1]); roots.lights.add(l); });
+      const bm = M('#16181A', { roughness: 0.4 }), wire = M('#111'), bulbM = new T.MeshBasicMaterial({ color: '#FFE2B0', toneMapped: false }), haloM = new T.SpriteMaterial({ map: U.halo(T), color: '#FFC870', transparent: true, depthWrite: false, blending: T.AdditiveBlending }), lin = new T.MeshBasicMaterial({ color: '#F6FAFF' });
+      pts.forEach((p, i) => {
+        if (it.lights === 'track') { box(0.04, 0.03, 1.6, bm, p[0], H - 0.02, p[1], 0, roots.lights); [-0.5, 0.5].forEach(dz => { const sp = new T.Mesh(new T.CylinderGeometry(0.045, 0.045, 0.14, 12), bm); sp.position.set(p[0], H - 0.12, p[1] + dz); sp.rotation.x = 0.4; roots.lights.add(sp); const c = new T.Mesh(new T.CircleGeometry(0.04, 12), new T.MeshBasicMaterial({ color: '#FFF4D8' })); c.position.set(p[0], H - 0.19, p[1] + dz + 0.03); c.rotation.x = Math.PI / 2 + 0.4; roots.lights.add(c); }); }
+        if (it.lights === 'bulbs') { [[0, 0], [0.45, -0.35]].forEach((o, k) => { const len = 0.9 + ((i + k) % 3) * 0.3; box(0.008, len, 0.008, wire, p[0] + o[0], H - len / 2, p[1] + o[1], 0, roots.lights); const bb = new T.Mesh(new T.SphereGeometry(0.07, 16, 12), bulbM); bb.scale.y = 1.25; bb.position.set(p[0] + o[0], H - len - 0.07, p[1] + o[1]); roots.lights.add(bb); const hs = new T.Sprite(haloM); hs.scale.set(0.5, 0.5, 1); hs.position.copy(bb.position); roots.lights.add(hs); }); }
+        if (it.lights === 'linear') box(0.06, 0.04, 1.4, lin, p[0], H - 0.25, p[1], 0, roots.lights);
+      });
     }
 
     /* ---------- предметы ---------- */
@@ -275,11 +291,13 @@
         v.push({ id: 'door', name: 'От входной двери', p: [pIn[0], 1.62, pIn[1]], t: [hall.cx, 1.3, hall.inner - hall.depth * 0.45] });
       }
       v.push({ id: 'inside', name: 'Изнутри к окнам', p: [cx - 0.3, 1.6, hall.inner - Math.min(hall.depth, 9) + 0.5], t: [cx, 1.2, y + 1] });
+      (project.extraViews || []).forEach((e, i) => v.push({ id: 'x' + i, name: e.name, p: [e.p[0], e.p[2] || 1.6, e.p[1]], t: [e.t[0], e.t[2] || 1.3, e.t[1]] }));
       v.push({ id: 'top', name: 'Сверху: весь план', p: [project.bounds.w / 2, Math.max(project.bounds.w, project.bounds.h) * 1.25, y - project.bounds.h * 0.45], t: [project.bounds.w / 2, 0, y - project.bounds.h * 0.5], top: true });
       return v;
     }
     let anim = null;
     function go(view, instant) {
+      if (walk.on) walkStop();
       roots.upper.visible = !view.top; roots.arch.children.forEach(c => { if (c.geometry && c.geometry.type === 'PlaneGeometry' && Math.abs(c.position.y - (project.H || 3.4)) < 0.01) c.visible = !view.top; });
       roots.lights.visible = !view.top;
       const to = { p: new T.Vector3().fromArray(view.p), t: new T.Vector3().fromArray(view.t) };
@@ -288,9 +306,75 @@
       anim = { fp: camera.position.clone(), ft: controls.target.clone(), to, t0: performance.now() };
     }
 
-    let w0 = 0, h0 = 0, active = true;
-    function resize() { const w = host.clientWidth, h = host.clientHeight; if (!w || !h) return; if (w === w0 && h === h0) return; w0 = w; h0 = h; renderer.setSize(w, h, false); camera.aspect = w / h; camera.fov = w / h < 1.2 ? 70 : 55; camera.updateProjectionMatrix(); }
-    function loop(now) { requestAnimationFrame(loop); if (!active) return; resize(); if (anim) { let k = Math.min(1, (now - anim.t0) / 900); k = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; camera.position.lerpVectors(anim.fp, anim.to.p, k); controls.target.lerpVectors(anim.ft, anim.to.t, k); if (k >= 1) anim = null; } controls.update(); renderer.render(scene, camera); }
+    /* ---------- прогулка от первого лица ---------- */
+    const walk = { on: false, x: 0, y: 0, yaw: 0, pitch: -0.05, keys: {}, tour: null, vx: 0, vy: 0, t: 0, onChange: null };
+    const EYE = 1.62, R0 = 0.24;
+    const ui = document.createElement('div'); ui.className = 'walkui'; ui.hidden = true;
+    ui.innerHTML = '<canvas class="mini" width="200" height="200" title="Нажмите, чтобы перейти в точку"></canvas><div class="pad"><button data-k="f" aria-label="Вперёд">▲</button><button data-k="l" aria-label="Повернуть влево">⟲</button><button data-k="b" aria-label="Назад">▼</button><button data-k="r" aria-label="Повернуть вправо">⟳</button></div><div class="whint">W A S D или стрелки — идти, мышь — смотреть, двойной клик по полу — перейти туда</div><button class="wexit">Выйти из прогулки</button>';
+    host.appendChild(ui);
+    const mini = ui.querySelector('.mini'), mg = mini.getContext('2d');
+    ui.querySelector('.wexit').onclick = () => walkStop();
+    ui.querySelectorAll('.pad button').forEach(bt => { const k = bt.dataset.k, on = e => { e.preventDefault(); walk.keys['pad' + k] = true; }, off = () => { walk.keys['pad' + k] = false; }; bt.addEventListener('pointerdown', on); bt.addEventListener('pointerup', off); bt.addEventListener('pointerleave', off); bt.addEventListener('pointercancel', off); });
+    function obstacleItems() { return (project.items || []).filter(it => !C.NOCOLLIDE[it.t] && !((C.BY[it.t] || {}).elev > 1.2)); }
+    let obst = [];
+    function blocked(x, y) {
+      for (const r of rings) { if (inRing([x, y], r)) return true; for (let i = 0; i < r.length; i++) { const a = r[i], b = r[(i + 1) % r.length], dx = b[0] - a[0], dy = b[1] - a[1], L2 = dx * dx + dy * dy || 1; let t = ((x - a[0]) * dx + (y - a[1]) * dy) / L2; t = Math.max(0, Math.min(1, t)); if (Math.hypot(x - a[0] - t * dx, y - a[1] - t * dy) < R0) return true; } }
+      for (const o of (project.openings || [])) { if (o.kind !== 'window') continue; const px = x - o.c[0], py = y - o.c[1], lu = px * o.u[0] + py * o.u[1], ln = px * o.n[0] + py * o.n[1]; if (Math.abs(lu) < o.L / 2 + R0 && ln > o.t0 - R0 && ln < o.t1 + R0) return true; }
+      for (const it of obst) { const d = C.dims(it), a = (it.r || 0) * Math.PI / 180, px = x - it.x, py = y - it.y, lx = px * Math.cos(a) + py * Math.sin(a), ly = -px * Math.sin(a) + py * Math.cos(a); if (Math.abs(lx) < d.W / 2 + 0.12 && Math.abs(ly) < d.D / 2 + 0.12) return true; }
+      return false;
+    }
+    function walkStart(opt) {
+      opt = opt || {}; obst = obstacleItems();
+      if (opt.p) { walk.x = opt.p[0]; walk.y = opt.p[1]; walk.yaw = opt.yaw || 0; }
+      else { const v = views().find(q => q.id === 'door') || views()[0]; walk.x = v.p[0]; walk.y = v.p[2]; walk.yaw = Math.atan2(v.t[0] - v.p[0], -(v.t[2] - v.p[2])); }
+      walk.pitch = -0.05; walk.on = true; controls.enabled = false; ui.hidden = false; anim = null;
+      roots.upper.visible = true; roots.lights.visible = true; roots.arch.children.forEach(c => { c.visible = true; });
+      camera.fov = 68; camera.updateProjectionMatrix(); walk.onChange && walk.onChange(true);
+    }
+    function walkStop() { walk.on = false; walk.tour = null; controls.enabled = true; ui.hidden = true; const dir = [Math.sin(walk.yaw), -Math.cos(walk.yaw)]; controls.target.set(walk.x + dir[0] * 1.5, 1.3, walk.y + dir[1] * 1.5); w0 = 0; resize(); walk.onChange && walk.onChange(false); }
+    function tour(path) { if (!path || path.length < 2) return; walkStart({ p: path[0], yaw: Math.atan2(path[1][0] - path[0][0], -(path[1][1] - path[0][1])) }); const segs = []; let tot = 0; for (let i = 1; i < path.length; i++) { const l = Math.hypot(path[i][0] - path[i - 1][0], path[i][1] - path[i - 1][1]); segs.push(l); tot += l; } walk.tour = { path, segs, tot, s: 0 }; }
+    function pathAt(tr, s) { s = Math.max(0, Math.min(tr.tot, s)); let i = 0; while (i < tr.segs.length - 1 && s > tr.segs[i]) { s -= tr.segs[i]; i++; } const a = tr.path[i], b = tr.path[i + 1], k = tr.segs[i] ? s / tr.segs[i] : 0; return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k]; }
+    let drag0 = null;
+    renderer.domElement.addEventListener('pointerdown', e => { if (!walk.on) return; drag0 = [e.clientX, e.clientY]; walk.tour = null; renderer.domElement.setPointerCapture(e.pointerId); });
+    renderer.domElement.addEventListener('pointermove', e => { if (!walk.on || !drag0) return; walk.yaw += (e.clientX - drag0[0]) * 0.0045; walk.pitch = Math.max(-0.9, Math.min(0.7, walk.pitch - (e.clientY - drag0[1]) * 0.0035)); drag0 = [e.clientX, e.clientY]; });
+    renderer.domElement.addEventListener('pointerup', () => { drag0 = null; });
+    renderer.domElement.addEventListener('wheel', e => { if (!walk.on) return; e.preventDefault(); const st = e.deltaY < 0 ? 0.5 : -0.5, nx = walk.x + Math.sin(walk.yaw) * st, ny = walk.y - Math.cos(walk.yaw) * st; if (!blocked(nx, ny)) { walk.x = nx; walk.y = ny; } }, { passive: false });
+    renderer.domElement.addEventListener('dblclick', e => { if (!walk.on) return; const r = renderer.domElement.getBoundingClientRect(), v = new T.Vector2((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1), rc = new T.Raycaster(); rc.setFromCamera(v, camera); const hit = new T.Vector3(); if (rc.ray.intersectPlane(new T.Plane(new T.Vector3(0, 1, 0), 0), hit) && !blocked(hit.x, hit.z)) { walk.tour = { path: [[walk.x, walk.y], [hit.x, hit.z]], segs: [Math.hypot(hit.x - walk.x, hit.z - walk.y)], tot: Math.hypot(hit.x - walk.x, hit.z - walk.y), s: 0, keepYaw: true }; } });
+    const KEYS = { KeyW: 'f', ArrowUp: 'f', KeyS: 'b', ArrowDown: 'b', KeyA: 'sl', KeyD: 'sr', ArrowLeft: 'l', ArrowRight: 'r', KeyQ: 'l', KeyE: 'r' };
+    root.addEventListener('keydown', e => { if (!walk.on || /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return; if (e.code === 'Escape') { walkStop(); return; } const k = KEYS[e.code]; if (k) { walk.keys[k] = true; walk.tour = null; e.preventDefault(); } walk.keys.run = e.shiftKey; });
+    root.addEventListener('keyup', e => { const k = KEYS[e.code]; if (k) walk.keys[k] = false; walk.keys.run = e.shiftKey; });
+    mini.addEventListener('pointerdown', e => { const m = miniMap(); const r = mini.getBoundingClientRect(); const x = ((e.clientX - r.left) / r.width * mini.width - m.ox) / m.k, y = ((e.clientY - r.top) / r.height * mini.height - m.oy) / m.k; if (!blocked(x, y)) { walk.x = x; walk.y = y; walk.tour = null; } e.stopPropagation(); });
+    function miniMap() { const b = project.bounds, H0 = Math.max(b.h, (project.facadeY || b.h) + 0.5), k = Math.min(mini.width / (b.w + 1), mini.height / (H0 + 1)); return { k, ox: (mini.width - b.w * k) / 2, oy: (mini.height - H0 * k) / 2 }; }
+    function drawMini() {
+      const m = miniMap(); mg.clearRect(0, 0, mini.width, mini.height); mg.fillStyle = 'rgba(247,245,239,.92)'; mg.fillRect(0, 0, mini.width, mini.height);
+      mg.save(); mg.translate(m.ox, m.oy); mg.scale(m.k, m.k);
+      mg.fillStyle = '#C9BD92'; mg.beginPath(); rings.forEach(r => { r.forEach((p, i) => i ? mg.lineTo(p[0], p[1]) : mg.moveTo(p[0], p[1])); mg.closePath(); }); mg.fill('evenodd');
+      mg.fillStyle = 'rgba(36,87,166,.35)'; (project.items || []).forEach(it => { if (C.NOCOLLIDE[it.t]) return; const d = C.dims(it); mg.save(); mg.translate(it.x, it.y); mg.rotate((it.r || 0) * Math.PI / 180); mg.fillRect(-d.W / 2, -d.D / 2, d.W, d.D); mg.restore(); });
+      mg.translate(walk.x, walk.y); mg.rotate(walk.yaw); mg.fillStyle = '#C0392B'; mg.beginPath(); mg.moveTo(0, -0.55); mg.lineTo(0.32, 0.3); mg.lineTo(-0.32, 0.3); mg.closePath(); mg.fill(); mg.restore();
+    }
+    function walkStep(dt) {
+      const k = walk.keys, sp = (k.run ? 2.6 : 1.4) * dt;
+      if (walk.tour) {
+        const tr = walk.tour; tr.s += 1.05 * dt * (tr.keepYaw ? 1.6 : 1);
+        const p = pathAt(tr, tr.s), ah = pathAt(tr, tr.s + 1.4);
+        walk.x = p[0]; walk.y = p[1];
+        if (!tr.keepYaw && Math.hypot(ah[0] - p[0], ah[1] - p[1]) > 0.05) { const ty = Math.atan2(ah[0] - p[0], -(ah[1] - p[1])); let d = ty - walk.yaw; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; walk.yaw += d * Math.min(1, dt * 2.2); }
+        if (tr.s >= tr.tot) walk.tour = null;
+      } else {
+        if (k.l || k.padl) walk.yaw -= 1.6 * dt; if (k.r || k.padr) walk.yaw += 1.6 * dt;
+        let mx = 0, my = 0; const f = [Math.sin(walk.yaw), -Math.cos(walk.yaw)], rt = [Math.cos(walk.yaw), Math.sin(walk.yaw)];
+        if (k.f || k.padf) { mx += f[0]; my += f[1]; } if (k.b || k.padb) { mx -= f[0]; my -= f[1]; } if (k.sl) { mx -= rt[0]; my -= rt[1]; } if (k.sr) { mx += rt[0]; my += rt[1]; }
+        const l = Math.hypot(mx, my); if (l > 0) { mx = mx / l * sp; my = my / l * sp; if (!blocked(walk.x + mx, walk.y + my)) { walk.x += mx; walk.y += my; } else if (!blocked(walk.x + mx, walk.y)) walk.x += mx; else if (!blocked(walk.x, walk.y + my)) walk.y += my; }
+      }
+      const f = [Math.sin(walk.yaw), -Math.cos(walk.yaw)], bob = 0;
+      camera.position.set(walk.x, EYE + bob, walk.y);
+      camera.lookAt(walk.x + f[0] * Math.cos(walk.pitch), EYE + Math.sin(walk.pitch), walk.y + f[1] * Math.cos(walk.pitch));
+      walk.t += dt; if (walk.t > 0.1) { walk.t = 0; drawMini(); }
+    }
+
+    let w0 = 0, h0 = 0, active = true, lastT = 0;
+    function resize() { const w = host.clientWidth, h = host.clientHeight; if (!w || !h) return; if (w === w0 && h === h0) return; w0 = w; h0 = h; renderer.setSize(w, h, false); camera.aspect = w / h; camera.fov = walk && walk.on ? 68 : (w / h < 1.2 ? 70 : 55); camera.updateProjectionMatrix(); }
+    function loop(now) { requestAnimationFrame(loop); const dt = Math.min(0.05, (now - (lastT || now)) / 1000); lastT = now; if (!active) return; resize(); if (walk.on) { walkStep(dt); renderer.render(scene, camera); return; } if (anim) { let k = Math.min(1, (now - anim.t0) / 900); k = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; camera.position.lerpVectors(anim.fp, anim.to.p, k); controls.target.lerpVectors(anim.ft, anim.to.t, k); if (k >= 1) anim = null; } controls.update(); renderer.render(scene, camera); }
     requestAnimationFrame(loop);
 
     // кадр с произвольной камеры (для фото фасада): вернёт canvas
@@ -310,6 +394,7 @@
     return {
       renderer, scene, camera, controls, INTERIORS,
       build, buildItems, place, rebuildItem, removeItem, addItem, highlight, setLabels, setAds, setInterior, views, go, renderView,
+      walkStart, walkStop, tour, walking: () => walk.on, onWalk: fn => { walk.onChange = fn; }, walkState: () => ({ x: walk.x, y: walk.y, yaw: walk.yaw }),
       setActive(v) { active = v; }, getHall: () => hall, getFacade: () => fac, resize: () => { w0 = 0; resize(); }
     };
   }

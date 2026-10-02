@@ -245,6 +245,37 @@
   S.signLetters = (g, w, h, o) => { g.clearRect(0, 0, w, h); const style = (o && o.style) || 'letters'; if (style === 'panel') { g.fillStyle = '#1E2124'; g.fillRect(0, 0, w, h); } g.save(); g.shadowColor = 'rgba(0,0,0,.35)'; g.shadowBlur = h * 0.04; g.shadowOffsetY = h * 0.02; text(g, 'UPPETIT', w * 0.36, h * 0.5, h * 0.62, '#FFFFFF', 800, 'center'); g.font = '500 ' + (h * 0.24) + 'px "Golos Text", Arial, sans-serif'; g.textAlign = 'left'; g.fillText('магазин', w * 0.7, h * 0.36); g.fillText('вкусной еды', w * 0.7, h * 0.64); g.restore(); };
   S.poster = (g, w, h, o) => { const c = (o && o.color) || '#F39200'; g.fillStyle = c; g.fillRect(0, 0, w, h); plate(g, w * 0.5, h * 0.42, w * 0.32, (o && o.i) || 0); text(g, 'UPPETIT', w * 0.5, h * 0.82, w * 0.12, '#fff', 800); text(g, 'сделано с аппетитом', w * 0.5, h * 0.9, w * 0.06, '#fff', 500); };
 
+  // неон: светящийся текст на прозрачном фоне
+  S.neon = (g, w, h, o) => {
+    g.clearRect(0, 0, w, h); const t = (o && o.text) || 'сделано с аппетитом', col = (o && o.color) || '#FF6FAE';
+    let fs = h * 0.62; g.font = '500 ' + fs + 'px "Golos Text", Arial, sans-serif'; while (g.measureText(t).width > w * 0.92 && fs > 8) { fs -= 2; g.font = '500 ' + fs + 'px "Golos Text", Arial, sans-serif'; }
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.save(); g.shadowColor = col; g.shadowBlur = h * 0.28; g.fillStyle = col; g.fillText(t, w / 2, h / 2); g.shadowBlur = h * 0.12; g.fillText(t, w / 2, h / 2); g.restore();
+    g.fillStyle = 'rgba(255,255,255,.85)'; g.fillText(t, w / 2, h / 2);
+  };
+  // полоса на полу: четыре цвета зон и «шевроны» по ходу
+  S.floorStripe = (g, w, h) => {
+    const cols = ['#3BAA35', '#F39200', '#F5C400', '#F07EB0'], bh = h / 4;
+    cols.forEach((c, i) => { g.fillStyle = c; g.fillRect(0, i * bh, w, bh + 0.5); });
+    g.fillStyle = 'rgba(255,255,255,.75)'; const step = h * 2.2;
+    for (let x = step * 0.5; x < w - h; x += step) { g.beginPath(); g.moveTo(x, h * 0.15); g.lineTo(x + h * 0.45, h * 0.5); g.lineTo(x, h * 0.85); g.lineTo(x + h * 0.18, h * 0.85); g.lineTo(x + h * 0.63, h * 0.5); g.lineTo(x + h * 0.18, h * 0.15); g.closePath(); g.fill(); }
+    noise(g, w, h, 0.05);
+  };
+  // панно «шахматка» нужного числа клеток
+  S.muralFood = (g, w, h, o) => {
+    srand(41); const cols = ['#E8412C', '#F5C400', '#3BAA35', '#F07EB0', '#F39200'];
+    const nc = (o && o.cols) || 4, nr = (o && o.rows) || 3, cw = w / nc, ch = h / nr;
+    for (let i = 0; i < nc; i++) for (let j = 0; j < nr; j++) {
+      const c = cols[(i * 2 + j * 3) % cols.length]; g.fillStyle = c; g.fillRect(i * cw, j * ch, cw + 0.5, ch + 0.5);
+      const cx = i * cw + cw / 2, cy = j * ch + ch / 2, r = Math.min(cw, ch);
+      if ((i + j) % 3 === 1) { const k = ['#3BAA35', '#F07EB0', '#F5C400', '#F39200'][(i + j) % 4]; face(g, cx, cy, r * 0.3, k === c ? '#fff' : k); }
+      else { g.fillStyle = '#fff'; g.beginPath(); g.arc(cx, cy, r * 0.32, 0, 7); g.fill(); g.fillStyle = shade(c, 0.8); g.beginPath(); g.arc(cx, cy, r * 0.25, 0, 7); g.fill(); for (let k = 0; k < 8; k++) { g.fillStyle = ['#7DB547', '#E9C46A', '#C0392B', '#fff'][(rnd() * 4) | 0]; g.beginPath(); g.arc(cx + (rnd() - 0.5) * r * 0.32, cy + (rnd() - 0.5) * r * 0.32, r * 0.045, 0, 7); g.fill(); } }
+    }
+  };
+  // мягкое свечение вокруг лампы
+  let haloT = null;
+  function halo(T) { if (haloT) return haloT; const c = cv(64, 64), g = c.getContext('2d'); const gr = g.createRadialGradient(32, 32, 2, 32, 32, 32); gr.addColorStop(0, 'rgba(255,255,255,.9)'); gr.addColorStop(0.25, 'rgba(255,220,160,.35)'); gr.addColorStop(1, 'rgba(255,200,120,0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); haloT = new T.CanvasTexture(c); return haloT; }
+
   const PAINTERS = Object.assign({}, P, S);
 
   /* ---------- кэш текстур three.js ---------- */
@@ -273,5 +304,5 @@
     cache.set(key, t); return t;
   }
 
-  root.UTex = { ZONE, ZONE_NAMES, PAINTERS, canvasFor, tex, surface, setUserPhotos, sizeFor, plate, face };
+  root.UTex = { ZONE, ZONE_NAMES, PAINTERS, canvasFor, tex, surface, setUserPhotos, sizeFor, plate, face, halo };
 })(window);
