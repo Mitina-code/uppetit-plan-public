@@ -21,12 +21,14 @@
     <button role="tab" data-v="edit" aria-selected="true">2. Расстановка</button>
     <button role="tab" data-v="views" aria-selected="false">3. Виды в 3D</button>
     <button role="tab" data-v="facade" aria-selected="false">4. Фасад на фото</button>
+    <button role="tab" data-v="compare" aria-selected="false">5. Сравнение и PDF</button>
     <button role="tab" data-v="cat" aria-selected="false">База оборудования</button>
     <button role="tab" data-v="interior" aria-selected="false">Отделка</button>
   </nav>
   <div class="filebar">
     <button class="btn" id="bExport" title="Скачать проект файлом, чтобы открыть на другом компьютере или отправить коллеге">Сохранить в файл</button>
     <label class="btn" title="Открыть файл проекта">Открыть файл<input type="file" accept=".json,application/json" id="bImport" hidden></label>
+    <button class="btn primary" id="bPdf" title="Скачать открытый вариант: схема, спецификация, виды">Скачать PDF</button>
     <button class="btn" id="bDemo" title="Вернуть пример: Московский пр., 38">Пример</button>
   </div>
 </header>
@@ -91,6 +93,14 @@
   <!-- 4. Фасад -->
   <section class="view" id="v-facade"><div class="panel" id="facadeHost"></div></section>
 
+  <!-- Сравнение -->
+  <section class="view" id="v-compare"><div class="panel">
+    <h2>Все варианты рядом</h2>
+    <p class="muted">Каждый вариант — с улицы, на вашем фото фасада (если оно загружено и окна отмечены на вкладке 4), с порога, у барной зоны, в посадке, в коридоре, в дальнем зале. Нажмите на картинку — откроется крупно. «Скачать PDF» сохраняет вариант целиком: схема с масштабом, спецификация, пояснения, виды.</p>
+    <div class="tools"><button class="btn" id="cmpRun">Обновить картинки</button><span id="cmpState" class="muted small"></span></div>
+    <div id="cmpBox" class="cmpwrap"></div>
+  </div></section>
+
   <!-- База -->
   <section class="view" id="v-cat"><div class="panel">
     <h2>База оборудования</h2>
@@ -114,6 +124,7 @@
   <div class="v3dbar"><label class="chk"><input type="checkbox" id="tLabels"> Номера</label><label class="chk"><input type="checkbox" id="tAds" checked> Реклама на окнах</label></div>
   <div class="hint">Тяните — поворот, колесо — ближе/дальше, правая кнопка — сдвиг</div>
 </div>
+<div id="lightbox" class="lightbox" hidden><img alt=""><span></span></div>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
@@ -126,6 +137,7 @@
 <script src="js/scene3d.js"></script>
 <script src="js/plan2d.js"></script>
 <script src="js/facade.js"></script>
+<script src="js/report.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

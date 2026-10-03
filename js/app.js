@@ -36,6 +36,7 @@
     if (slot) { slot.appendChild(v3d); v3d.hidden = false; scene.setActive(true); setTimeout(scene.resize, 0); } else { v3d.hidden = true; scene.setActive(false); }
     if (v === 'facade') facade.sync();
     if (v === 'cat') buildCatalog();
+    if (v === 'compare') buildCompare();
     if (v === 'interior') buildInteriors();
     if (v === 'edit') setTimeout(() => plan.render(), 0);
     try { localStorage.setItem('uppetit-tab', v); } catch (e) { }
@@ -345,6 +346,55 @@
   $('#bWalk').onclick = startWalk; $('#bWalk2').onclick = startWalk;
   $('#bTour').onclick = () => { if (tab !== 'views') showTab('views'); const path = P.tour; if (!path) { toast('Для этого проекта маршрута нет — включаю прогулку'); return scene.walkStart(); } scene.tour(path); };
   scene.onWalk(on => { v3d.classList.toggle('walking', on); $('#bWalk').textContent = on ? 'Идёт прогулка' : 'Прогулка'; });
+
+  /* ---------- сравнение вариантов и PDF ---------- */
+  const R = window.UReport, varCache = {};
+  const tick = () => new Promise(r => setTimeout(r, 0));
+  async function variantProject(v) {
+    if (P && P.variant === v.id) return P;                       // открытый вариант — со всеми правками
+    if (!varCache[v.id]) varCache[v.id] = await (await fetch(v.file, { cache: 'no-store' })).json();
+    const p = JSON.parse(JSON.stringify(varCache[v.id])); p.facade = JSON.parse(JSON.stringify(P.facade || { quads: {}, patches: [], refl: 0.12 })); p.ads = P.ads; p.sign = P.sign; return p;
+  }
+  function columns() { const cols = variants.slice(); if (!P.variant || !variants.some(v => v.id === P.variant)) cols.push({ id: P.variant || 'mine', name: 'Ваш проект', summary: P.name || '', points: [], mine: true }); return cols; }
+  let cmpKey = '', cmpBusy = false;
+  async function buildCompare(force) {
+    const key = JSON.stringify([P.variant, (P.items || []).length, P.interior, facade.ready(), variants.length]);
+    if (cmpBusy || (!force && key === cmpKey)) return; cmpBusy = true; cmpKey = key;
+    const st = $('#cmpState'), box = $('#cmpBox'), cols = columns();
+    const rows = [{ id: 'plan', name: 'Схема' }].concat(facade.ready() ? [{ id: 'facade', name: 'Фасад на фото' }] : []).concat(R.SHOTS.map(s => ({ id: s.id, name: s.name })));
+    let h = '<table class="cmp"><tr><td></td>' + cols.map((v, i) => '<th' + (v.id === P.variant || v.mine ? ' aria-current="true"' : '') + '><b>' + v.name + '</b><span class="small muted">' + (v.summary || '') + '</span><div class="row">' + (v.mine ? '' : '<button class="btn sm" data-open="' + i + '">Открыть</button>') + '<button class="btn sm primary" data-pdf="' + i + '">Скачать PDF</button></div></th>').join('') + '</tr>';
+    rows.forEach(r => { h += '<tr><td class="rowname">' + r.name + '</td>' + cols.map((v, i) => '<td><img data-c="' + i + '" data-r="' + r.id + '" alt=""></td>').join('') + '</tr>'; });
+    box.innerHTML = h + '</table>';
+    try {
+      for (let i = 0; i < cols.length; i++) {
+        st.textContent = 'Готовлю: ' + cols[i].name + '…'; await tick();
+        const p = await variantProject(cols[i]);
+        const pl = await R.planImage(p, 700); setImg(i, 'plan', pl.canvas, 'Схема');
+        const sh = R.shots(p, 640, 400); sh.forEach(x => setImg(i, x.id, x.canvas, x.name));
+        if (facade.ready()) { const m = facade.montageFor(p, R.scene()); if (m) setImg(i, 'facade', m, 'Фасад на фото'); }
+        await tick();
+      }
+      st.textContent = '';
+    } catch (e) { console.error(e); st.textContent = 'Не получилось: ' + e.message; }
+    cmpBusy = false;
+    function setImg(i, r, c, name) { const el = box.querySelector('img[data-c="' + i + '"][data-r="' + r + '"]'); if (el) { el.src = c.toDataURL('image/jpeg', 0.85); el.dataset.name = cols[i].name + ' — ' + name; } }
+  }
+  $('#cmpRun').onclick = () => buildCompare(true);
+  $('#cmpBox').addEventListener('click', async e => {
+    const im = e.target.closest('img[src]'); if (im) { const lb = $('#lightbox'); lb.querySelector('img').src = im.src; lb.querySelector('span').textContent = im.dataset.name || ''; lb.hidden = false; return; }
+    const o = e.target.closest('[data-open]'); if (o) { await pickVariant(columns()[+o.dataset.open]); buildCompare(true); return; }
+    const d = e.target.closest('[data-pdf]'); if (d) { const v = columns()[+d.dataset.pdf]; makePdf(await variantProject(v), v); }
+  });
+  $('#lightbox').onclick = () => { $('#lightbox').hidden = true; };
+  async function makePdf(p, meta) {
+    try {
+      toast('Готовлю PDF…'); await tick();
+      let fc = null; if (facade.ready()) { R.shots(p, 64, 40, []); fc = facade.montageFor(p, R.scene()); }
+      await R.pdf(p, { name: meta.mine ? (p.name || 'Ваш проект') : meta.name, points: meta.points || [] }, fc, t => { if (t) toast(t); });
+      toast('PDF сохранён в «Загрузки»');
+    } catch (e) { console.error(e); toast('Не получилось сделать PDF: ' + e.message); }
+  }
+  $('#bPdf').onclick = () => { const v = variants.find(x => x.id === P.variant); makePdf(P, v ? { name: v.name, points: v.points } : { name: P.name || 'Ваш проект', points: [], mine: true }); };
 
   /* ---------- запуск ---------- */
   let underlay = null;

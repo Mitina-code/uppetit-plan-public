@@ -200,6 +200,7 @@
       // столбики и фонарь
       [fac.x0 - 1.2, fac.x1 + 1.5].forEach(x => { const c = new T.Mesh(new T.CylinderGeometry(0.08, 0.1, 0.85, 14), M('#1E2124')); c.position.set(x, 0.42, y + 1.4); c.castShadow = true; roots.street.add(c); });
       const lp = new T.Mesh(new T.CylinderGeometry(0.07, 0.1, 6, 12), M('#2B2F33')); lp.position.set(fac.x1 + 9, 3, y + 5.8); roots.street.add(lp);
+      roots.street.traverse(o => { if (o.isMesh && o.position.z > y + 20) o.castShadow = false; });
     }
 
     function buildUpper() {

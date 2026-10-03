@@ -114,3 +114,16 @@ input[type=number]{width:84px;border:1px solid var(--line);background:var(--pane
 .vardesc ul{margin:6px 0 0;padding-left:18px;font-size:13.5px}
 .vardesc li{margin:3px 0}
 .walkbtns{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+
+.cmpwrap{overflow-x:auto}
+.cmp{border-collapse:separate;border-spacing:8px;min-width:900px}
+.cmp th{text-align:left;vertical-align:top;font-size:14px;padding:4px 2px;min-width:220px}
+.cmp th b{display:block;font-size:15px;margin-bottom:4px}
+.cmp th .row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.cmp td{vertical-align:top}
+.cmp td.rowname{font-size:13px;color:var(--muted);width:110px;min-width:110px;padding-top:6px}
+.cmp img{width:100%;max-width:360px;display:block;border-radius:8px;border:1px solid var(--line);cursor:zoom-in;background:#EEF1F4}
+.cmp th[aria-current="true"]{color:var(--blue)}
+.lightbox{position:fixed;inset:0;background:rgba(10,14,18,.85);z-index:70;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px;cursor:zoom-out}
+.lightbox img{max-width:96vw;max-height:86vh;border-radius:8px;background:#fff}
+.lightbox span{color:#fff;font-size:15px}

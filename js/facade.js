@@ -57,7 +57,8 @@
       <p class="small muted" id="fInfo"></p>`;
     const can = host.querySelector('#fCan'), g = can.getContext('2d'), info = host.querySelector('#fInfo');
     let img = null, mode = 'mark', drag = null, patchStart = null, patchMode = false, lastPose = null;
-    const P = () => api.getProject();
+    let overP = null, overS = null; // для наложения другого варианта (сравнение, PDF)
+    const P = () => overP || api.getProject();
     const F = () => { const p = P(); p.facade = p.facade || { quads: {}, patches: [], refl: 0.12 }; return p.facade; };
     const targets = () => (P().openings || []).filter(o => o.facade && (o.kind === 'window' || o.kind === 'door')).sort((a, b) => a.c[0] - b.c[0]);
     const label = o => { const ts = targets(); const w = ts.filter(x => x.kind === 'window'); return o.kind === 'window' ? 'Окно ' + (w.indexOf(o) + 1) : (o.entrance ? 'Вход' : 'Дверь'); };
@@ -112,7 +113,7 @@
         patchFill();
         const ps = computePose(); lastPose = ps;
         if (!ps || ps.C[2] < 0.5) { info.textContent = 'Не получилось подобрать ракурс. Проверьте, что углы рамок стоят на углах окон в правильном порядке (верх-лево, верх-право, низ-право, низ-лево).'; return; }
-        const cam = cameraFrom(ps), sc = api.scene();
+        const cam = cameraFrom(ps), sc = overS || api.scene();
         const shot = sc.renderView(cam, can.width, can.height);
         const refl = (f.refl != null ? f.refl : 0.12);
         ts.forEach(o => { const q = f.quads[o.id]; if (!q) return; const pts = q.map(toPx); g.save(); g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.closePath(); g.clip(); g.drawImage(shot, 0, 0); g.globalAlpha = refl; g.drawImage(img, 0, 0, can.width, can.height); g.restore(); });
@@ -161,7 +162,14 @@
     host.querySelector('#fRefl').addEventListener('input', e => { F().refl = e.target.value / 100; if (mode === 'result') draw(); });
 
     function sync() { const p = P(); host.querySelector('#fAds').checked = p.ads !== false; host.querySelector('#fSign').value = p.sign || 'letters'; host.querySelector('#fRefl').value = Math.round((F().refl != null ? F().refl : 0.12) * 100); host.querySelector('#fPatchClr').hidden = !(F().patches || []).length; ensureQuads(); draw(); }
-    return { setImage, draw, sync, setMode, hasImage: () => !!img };
+    // готовый кадр «фото + зал» для любого проекта и любой 3D-сцены (без смены того, что на экране)
+    function montageFor(proj, sc) {
+      if (!img) return null; const m0 = mode; overP = proj; overS = sc; mode = 'result';
+      let out = null; try { draw(); const ok = lastPose && lastPose.C[2] >= 0.5; if (ok) { out = document.createElement('canvas'); out.width = can.width; out.height = can.height; out.getContext('2d').drawImage(can, 0, 0); } } finally { overP = null; overS = null; mode = m0; draw(); }
+      return out;
+    }
+    function ready() { const p = api.getProject(); return !!img && p.facade && Object.keys(p.facade.quads || {}).length > 0; }
+    return { setImage, draw, sync, setMode, hasImage: () => !!img, montageFor, ready };
   }
   root.UFacade = { create, homography, pose };
 })(window);
