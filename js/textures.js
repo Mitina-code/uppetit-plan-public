@@ -234,7 +234,7 @@
     // компактно: круг с блюдом в верхнем углу, наклейка, полоса внизу — середина окна прозрачная, зал виден с улицы
     g.clearRect(0, 0, w, h); const i = (o && o.i) || 0, m = Math.min(w, h);
     plate(g, w * (i % 2 ? 0.8 : 0.2), h * 0.2, m * 0.15, i);
-    face(g, w * (i % 2 ? 0.12 : 0.88), h * 0.12, m * 0.05, ['#3BAA35', '#F07EB0', '#F5C400', '#F39200'][i % 4]);
+    face(g, w * (i % 2 ? 0.55 : 0.45), h * 0.12, m * 0.05, ['#3BAA35', '#F07EB0', '#F5C400', '#F39200'][i % 4]);
     g.fillStyle = 'rgba(30,33,36,.92)'; g.fillRect(0, h * 0.86, w, h * 0.14);
     const cols = ['#3BAA35', '#F39200', '#F5C400', '#F07EB0']; cols.forEach((c, k) => { g.fillStyle = c; g.fillRect(k * w / 4, h * 0.86, w / 4, h * 0.02); });
     text(g, i % 2 ? 'кофе · салаты · супы · десерты' : 'магазин вкусной еды', w / 2, h * 0.935, Math.min(h * 0.045, w * 0.055), '#F4F4F2', 500);
@@ -277,6 +277,12 @@
     const rows = [['кофе с собой', '#F39200'], ['салаты', '#3BAA35'], ['супы', '#F39200'], ['горячее', '#F5C400'], ['десерты', '#F07EB0']];
     rows.forEach((r, i) => { const y = h * (0.3 + i * 0.1); g.fillStyle = r[1]; g.beginPath(); g.arc(w * 0.12, y, h * 0.018, 0, 7); g.fill(); g.font = '500 ' + (h * 0.05) + 'px "Golos Text", Arial'; g.fillStyle = '#F4F4F2'; g.textAlign = 'left'; g.textBaseline = 'middle'; g.fillText(r[0], w * 0.2, y); });
     plate(g, w / 2, h * 0.86, Math.min(w, h) * 0.17, 1);
+  };
+  // вертикальная наклейка на стекло: блоки цветов зон, персонажи, вертикальная надпись
+  S.stickerStrip = (g, w, h, o) => {
+    const cols = ['#3BAA35', '#F39200', '#F5C400', '#F07EB0'], k = (o && o.i) || 0, n = 4, bh = h / n;
+    for (let i = 0; i < n; i++) { const c = cols[(i + k) % 4]; g.fillStyle = c; g.fillRect(0, i * bh, w, bh + 1); face(g, w / 2, i * bh + bh / 2, Math.min(w * 0.36, bh * 0.3), i % 2 ? '#FFFFFF' : shade(c, 1.25)); }
+    g.save(); g.translate(w * 0.5, h * 0.5); g.rotate(-Math.PI / 2); g.globalAlpha = 0.0; g.restore();
   };
   // мягкое свечение вокруг лампы
   let haloT = null;

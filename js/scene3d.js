@@ -260,15 +260,33 @@
 
     /* ---------- предметы ---------- */
     function makeLabel(n) { const c = document.createElement('canvas'); c.width = c.height = 96; const g = c.getContext('2d'); g.fillStyle = '#E2B32A'; g.beginPath(); g.arc(48, 48, 42, 0, 7); g.fill(); g.lineWidth = 5; g.strokeStyle = '#1A2836'; g.stroke(); g.fillStyle = '#1A2836'; g.font = 'bold 46px Arial'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(n, 48, 51); const t = new T.CanvasTexture(c); const s = new T.Sprite(new T.SpriteMaterial({ map: t, depthTest: true, sizeAttenuation: false })); s.scale.set(0.04, 0.04, 1); s.renderOrder = 10; s.userData.label = true; return s; }
-    function buildItems() { clear(roots.items); itemsById = {}; (project.items || []).forEach(addItem); }
+    function buildItems() { clear(roots.items); itemsById = {}; (project.items || []).forEach(addItem); stickers(); }
+    // если высокий предмет стоит вплотную к окну фасада — на закрытую им часть стекла клеим вертикальную наклейку
+    const stickerG = new T.Group(); scene.add(stickerG);
+    function stickers() {
+      clear(stickerG); if (!project || !fac) return;
+      (project.openings || []).filter(o => o.facade && o.kind === 'window' && Math.abs(o.u[1]) < 0.2).forEach((o, wi) => {
+        const x0 = o.c[0] - o.L / 2, x1 = o.c[0] + o.L / 2, inner = fac.y - fac.th, sill = o.sill || 0.55, top = o.top || 2.15;
+        (project.items || []).forEach(it => {
+          const ty = C.BY[it.t]; if (!ty || ty.model || (C.dims(it).H + (ty.elev || 0)) < 1.3) return;
+          const d = C.dims(it), a = (it.r || 0) * Math.PI / 180, hw = Math.abs(Math.cos(a)) * d.W / 2 + Math.abs(Math.sin(a)) * d.D / 2, hd = Math.abs(Math.sin(a)) * d.W / 2 + Math.abs(Math.cos(a)) * d.D / 2;
+          if (it.y + hd < inner - 0.25) return;                         // не у окна
+          const a0 = Math.max(x0, it.x - hw), a1 = Math.min(x1, it.x + hw); if (a1 - a0 < 0.04) return;
+          const fw = 0.06, s0 = Math.max(a0, x0 + fw), s1 = Math.min(a1, x1 - fw); if (s1 - s0 < 0.03) return;
+          const hgt = top - sill - fw * 2, tex = U.tex(T, 'stickerStrip', s1 - s0, hgt, { i: wi + (a0 > o.c[0] ? 1 : 0) });
+          const m = new T.Mesh(new T.PlaneGeometry(s1 - s0, hgt), new T.MeshStandardMaterial({ map: tex, roughness: 0.6, side: T.DoubleSide }));
+          m.position.set((s0 + s1) / 2, (sill + top) / 2, fac.y - 0.14 - 0.006); stickerG.add(m);
+        });
+      });
+    }
     function addItem(it) {
       const g = C.build(T, it, U); const ty = C.BY[it.t] || C.BY.generic;
       const lb = makeLabel(ty.n); lb.position.y = g.userData.H + 0.18; lb.visible = labels; g.add(lb);
       roots.items.add(g); itemsById[it.id] = g; place(it); applyEnv(g);
     }
     function place(it) { const g = itemsById[it.id]; if (!g) return; g.position.set(it.x, 0, it.y); g.rotation.y = -(it.r || 0) * Math.PI / 180; }
-    function removeItem(id) { const g = itemsById[id]; if (g) { roots.items.remove(g); delete itemsById[id]; } }
-    function rebuildItem(it) { removeItem(it.id); addItem(it); }
+    function removeItem(id) { const g = itemsById[id]; if (g) { roots.items.remove(g); delete itemsById[id]; } if (project) setTimeout(stickers, 0); }
+    function rebuildItem(it) { removeItem(it.id); addItem(it); stickers(); }
     const hl = new T.BoxHelper(undefined, 0xF2C014); hl.visible = false; scene.add(hl);
     function highlight(id) { const g = id != null && itemsById[id]; if (g) { hl.setFromObject(g); hl.visible = true; } else hl.visible = false; }
     function setLabels(v) { labels = v; roots.items.traverse(o => { if (o.userData && o.userData.label) o.visible = v; }); }
