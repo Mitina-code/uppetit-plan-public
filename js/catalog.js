@@ -54,6 +54,7 @@
     { id: 'stripe', n: 34, cat: 'decor', name: 'Цветная полоса на полу', W: 4.00, D: 0.30, H: 0.01, custom: { w: [0.5, 15] }, model: 'stripe', src: 'навигация цветом, как зоны Uppetit', note: 'Ведёт гостя к посадке. Длина любая.' },
     { id: 'plant', n: 35, cat: 'decor', name: 'Растение в кашпо', W: 0.50, D: 0.50, H: 1.30, model: 'plant', src: 'зелень в залах Uppetit', note: '' },
     { id: 'longtable', n: 37, cat: 'seat', name: 'Общий длинный стол', W: 2.40, D: 0.80, H: 0.75, custom: { w: [1.2, 5] }, model: 'longtable', src: 'общий стол в нише (как у Din Tai Fung)', note: 'Заказной: длина под компанию. Светлое дерево, чёрные опоры.' },
+    { id: 'aframe', n: 39, cat: 'decor', name: 'Штендер у входа', W: 0.60, D: 0.55, H: 1.05, model: 'aframe', src: 'штендер у входа в Uppetit (фото с Манчестерской)', note: 'Ставится на улице у двери: меню и цены видно прохожим.' },
     { id: 'pendant', n: 36, cat: 'decor', name: 'Подвесная лампа-«груша»', W: 0.20, D: 0.20, H: 3.40, model: 'pendant', src: 'свет в залах Uppetit', note: 'Висит над столом; низ лампы на 1,9 м.' }
   );
   CATS.splice(3, 0, ['decor', 'Оформление']);
@@ -96,6 +97,9 @@
       [-1, 1].forEach(s => { const l = new T.Mesh(new T.BoxGeometry(0.05, 1.01, 0.05), blk); l.position.set(s * (d.W / 2 - 0.12), 0.505, 0); g.add(l); const f = new T.Mesh(new T.BoxGeometry(0.05, 0.03, d.D * 0.9), blk); f.position.set(s * (d.W / 2 - 0.12), 0.015, 0); g.add(f); });
     } else if (t.model === 'trash') {
       const m = M('#3B4045', { roughness: 0.5, metalness: 0.3 }); const c = new T.Mesh(new T.CylinderGeometry(0.17, 0.15, 0.62, 24), m); c.position.y = 0.31; g.add(c); const l = new T.Mesh(new T.CylinderGeometry(0.18, 0.18, 0.04, 24), M('#9AA1A7', { metalness: 0.6, roughness: 0.3 })); l.position.y = 0.64; g.add(l);
+    } else if (t.model === 'aframe') {
+      const face = new T.MeshStandardMaterial({ map: U.tex(T, 'aframe', 0.56, 0.95), roughness: 0.6 }), fr = M('#1E2124', { roughness: 0.5 });
+      [1, -1].forEach(s0 => { const b = new T.Group(); const p = new T.Mesh(new T.BoxGeometry(0.6, 1.0, 0.025), [fr, fr, fr, fr, s0 > 0 ? face : fr, s0 > 0 ? fr : face]); p.position.y = 0.5; b.add(p); b.position.z = s0 * 0.14; b.rotation.x = -s0 * 0.27; g.add(b); });
     } else if (t.model === 'longtable') {
       const top = new T.Mesh(new T.BoxGeometry(d.W, 0.04, d.D), new T.MeshStandardMaterial({ map: U.tex(T, 'wood', d.W, d.D), roughness: 0.55 })); top.position.y = 0.73; g.add(top);
       const blk = M('#1E2124', { roughness: 0.45, metalness: 0.3 });

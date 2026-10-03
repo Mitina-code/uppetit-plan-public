@@ -231,15 +231,13 @@
   }
   // плёнка на окно: прозрачный фон, круги с блюдами, наклейки, надпись, нижняя полоса
   S.windowAd = (g, w, h, o) => {
-    g.clearRect(0, 0, w, h); const i = (o && o.i) || 0;
-    const r = Math.min(w, h) * 0.26;
-    plate(g, w * (i % 2 ? 0.34 : 0.66), h * 0.42, r, i);
-    face(g, w * (i % 2 ? 0.78 : 0.2), h * 0.18, Math.min(w, h) * 0.07, ['#3BAA35', '#F07EB0', '#F5C400', '#F39200'][i % 4]);
-    face(g, w * (i % 2 ? 0.12 : 0.86), h * 0.62, Math.min(w, h) * 0.055, ['#F5C400', '#F39200', '#3BAA35', '#F07EB0'][i % 4]);
-    // нижняя полоса с надписью
-    g.fillStyle = 'rgba(30,33,36,.92)'; g.fillRect(0, h * 0.8, w, h * 0.2);
-    const cols = ['#3BAA35', '#F39200', '#F5C400', '#F07EB0']; cols.forEach((c, k) => { g.fillStyle = c; g.fillRect(k * w / 4, h * 0.8, w / 4, h * 0.025); });
-    text(g, i % 2 ? 'кофе · салаты · супы · десерты' : 'магазин вкусной еды', w / 2, h * 0.9, Math.min(h * 0.055, w * 0.06), '#F4F4F2', 500);
+    // компактно: круг с блюдом в верхнем углу, наклейка, полоса внизу — середина окна прозрачная, зал виден с улицы
+    g.clearRect(0, 0, w, h); const i = (o && o.i) || 0, m = Math.min(w, h);
+    plate(g, w * (i % 2 ? 0.8 : 0.2), h * 0.2, m * 0.15, i);
+    face(g, w * (i % 2 ? 0.12 : 0.88), h * 0.12, m * 0.05, ['#3BAA35', '#F07EB0', '#F5C400', '#F39200'][i % 4]);
+    g.fillStyle = 'rgba(30,33,36,.92)'; g.fillRect(0, h * 0.86, w, h * 0.14);
+    const cols = ['#3BAA35', '#F39200', '#F5C400', '#F07EB0']; cols.forEach((c, k) => { g.fillStyle = c; g.fillRect(k * w / 4, h * 0.86, w / 4, h * 0.02); });
+    text(g, i % 2 ? 'кофе · салаты · супы · десерты' : 'магазин вкусной еды', w / 2, h * 0.935, Math.min(h * 0.045, w * 0.055), '#F4F4F2', 500);
   };
   S.doorAd = (g, w, h) => { g.clearRect(0, 0, w, h); face(g, w * 0.3, h * 0.12, w * 0.16, '#3BAA35'); face(g, w * 0.75, h * 0.86, w * 0.16, '#F5C400'); text(g, 'UPPETIT', w / 2, h * 0.42, w * 0.16, '#F4F4F2', 800); text(g, 'режим работы 8:00–22:00', w / 2, h * 0.5, w * 0.06, '#F4F4F2', 500); };
   S.signLetters = (g, w, h, o) => { g.clearRect(0, 0, w, h); const style = (o && o.style) || 'letters'; if (style === 'panel') { g.fillStyle = '#1E2124'; g.fillRect(0, 0, w, h); } g.save(); g.shadowColor = 'rgba(0,0,0,.35)'; g.shadowBlur = h * 0.04; g.shadowOffsetY = h * 0.02; text(g, 'UPPETIT', w * 0.36, h * 0.5, h * 0.62, '#FFFFFF', 800, 'center'); g.font = '500 ' + (h * 0.24) + 'px "Golos Text", Arial, sans-serif'; g.textAlign = 'left'; g.fillText('магазин', w * 0.7, h * 0.36); g.fillText('вкусной еды', w * 0.7, h * 0.64); g.restore(); };
@@ -271,6 +269,14 @@
       if ((i + j) % 3 === 1) { const k = ['#3BAA35', '#F07EB0', '#F5C400', '#F39200'][(i + j) % 4]; face(g, cx, cy, r * 0.3, k === c ? '#fff' : k); }
       else { g.fillStyle = '#fff'; g.beginPath(); g.arc(cx, cy, r * 0.32, 0, 7); g.fill(); g.fillStyle = shade(c, 0.8); g.beginPath(); g.arc(cx, cy, r * 0.25, 0, 7); g.fill(); for (let k = 0; k < 8; k++) { g.fillStyle = ['#7DB547', '#E9C46A', '#C0392B', '#fff'][(rnd() * 4) | 0]; g.beginPath(); g.arc(cx + (rnd() - 0.5) * r * 0.32, cy + (rnd() - 0.5) * r * 0.32, r * 0.045, 0, 7); g.fill(); } }
     }
+  };
+  // штендер: меню у входа
+  S.aframe = (g, w, h) => {
+    g.fillStyle = '#1E2124'; g.fillRect(0, 0, w, h); g.fillStyle = '#F5C400'; g.fillRect(w * 0.06, h * 0.05, w * 0.88, h * 0.16);
+    text(g, 'UPPETIT', w / 2, h * 0.13, h * 0.08, '#1E2124', 800);
+    const rows = [['кофе с собой', '#F39200'], ['салаты', '#3BAA35'], ['супы', '#F39200'], ['горячее', '#F5C400'], ['десерты', '#F07EB0']];
+    rows.forEach((r, i) => { const y = h * (0.3 + i * 0.1); g.fillStyle = r[1]; g.beginPath(); g.arc(w * 0.12, y, h * 0.018, 0, 7); g.fill(); g.font = '500 ' + (h * 0.05) + 'px "Golos Text", Arial'; g.fillStyle = '#F4F4F2'; g.textAlign = 'left'; g.textBaseline = 'middle'; g.fillText(r[0], w * 0.2, y); });
+    plate(g, w / 2, h * 0.86, Math.min(w, h) * 0.17, 1);
   };
   // мягкое свечение вокруг лампы
   let haloT = null;

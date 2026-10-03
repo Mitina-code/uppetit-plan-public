@@ -473,7 +473,10 @@
       xs.sort((a, b) => a - b);
       for (let q = 0; q + 1 < xs.length; q += 2) { const i0 = Math.max(0, Math.ceil(xs[q] / res - 0.5) - gx0), i1 = Math.min(nx - 1, Math.floor(xs[q + 1] / res - 0.5) - gx0); for (let i = i0; i <= i1; i++) grid[j * nx + i] = 1; }
     }
-    (edits || []).forEach(e => { const v = e.op === 'add' ? 1 : 0; const i0 = Math.max(0, Math.round(e.r[0] / res) - gx0), i1 = Math.min(nx, Math.round(e.r[2] / res) - gx0), j0 = Math.max(0, Math.round(e.r[1] / res) - gy0), j1 = Math.min(ny, Math.round(e.r[3] / res) - gy0); for (let j = j0; j < j1; j++) for (let i = i0; i < i1; i++) grid[j * nx + i] = v; });
+    // «снести только тонкое»: в прямоугольнике убираем клетки стены, где толщина (меньшая из двух осей) не больше max
+    const thick = (i, j) => { const run = (di, dj) => { let k = 1; while (k < 200) { const ii = i + di * k, jj = j + dj * k; if (ii < 0 || jj < 0 || ii >= nx || jj >= ny || !grid[jj * nx + ii]) break; k++; } return k - 1; }; return (Math.min(run(1, 0) + run(-1, 0), run(0, 1) + run(0, -1)) + 1) * res; };
+    (edits || []).filter(e => e.op === 'cutThin').forEach(e => { const max = e.max || 0.15, kill = []; const i0 = Math.max(0, Math.round(e.r[0] / res) - gx0), i1 = Math.min(nx, Math.round(e.r[2] / res) - gx0), j0 = Math.max(0, Math.round(e.r[1] / res) - gy0), j1 = Math.min(ny, Math.round(e.r[3] / res) - gy0); for (let j = j0; j < j1; j++) for (let i = i0; i < i1; i++) if (grid[j * nx + i] && thick(i, j) <= max + 1e-9) kill.push(j * nx + i); kill.forEach(k => grid[k] = 0); });
+    (edits || []).filter(e => e.op !== 'cutThin').forEach(e => { const v = e.op === 'add' ? 1 : 0; const i0 = Math.max(0, Math.round(e.r[0] / res) - gx0), i1 = Math.min(nx, Math.round(e.r[2] / res) - gx0), j0 = Math.max(0, Math.round(e.r[1] / res) - gy0), j1 = Math.min(ny, Math.round(e.r[3] / res) - gy0); for (let j = j0; j < j1; j++) for (let i = i0; i < i1; i++) grid[j * nx + i] = v; });
     // строки → прямоугольники, одинаковые подряд по вертикали склеиваем
     const rects = [], open = new Map();
     for (let j = 0; j <= ny; j++) {
