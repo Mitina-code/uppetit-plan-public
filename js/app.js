@@ -334,7 +334,6 @@
     $('#varDesc').innerHTML = cur ? '<b>Что сделано и почему</b><ul>' + cur.points.map(t => '<li>' + t + '</li>').join('') + '</ul>' : '<p class="small muted">Сейчас открыт ваш собственный проект. Выберите вариант, чтобы сравнить (текущий можно вернуть кнопкой «Отменить» на вкладке «Расстановка»).</p>';
   }
   async function pickVariant(v) {
-    if (P && P.variant === v.id) return;
     const np = await (await fetch(v.file, { cache: 'no-store' })).json();
     np.facade = P && P.facade ? P.facade : np.facade; // разметка фото фасада общая
     undo.push(snap()); redo = []; updUndo();
