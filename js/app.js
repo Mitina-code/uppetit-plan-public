@@ -326,20 +326,26 @@
 
   /* ---------- варианты планировки и прогулка ---------- */
   let variants = [];
-  async function loadVariants() { try { variants = await (await fetch('data/variants.json', { cache: 'no-store' })).json(); } catch (e) { variants = []; } renderVariants(); }
+  async function loadVariants() {
+    try { variants = await (await fetch('data/variants.json', { cache: 'no-store' })).json(); } catch (e) { variants = []; }
+    // сохранённая в браузере копия варианта устарела (вариант обновили на сайте) — подгружаем свежую
+    const v = variants.find(x => P && x.id === P.variant);
+    if (v && v.rev && P.rev !== v.rev) { await pickVariant(v, true); toast(v.name + ' — обновлён до последней версии'); }
+    renderVariants();
+  }
   function renderVariants() {
     const box = $('#varList'); if (!box) return; box.innerHTML = '';
     variants.forEach(v => { const b = document.createElement('button'); b.className = 'varbtn'; b.setAttribute('aria-pressed', P && P.variant === v.id ? 'true' : 'false'); b.innerHTML = '<b>' + v.name + '</b><span>' + v.summary + '</span>'; b.onclick = () => pickVariant(v); box.appendChild(b); });
     const cur = variants.find(v => P && v.id === P.variant);
     $('#varDesc').innerHTML = cur ? '<b>Что сделано и почему</b><ul>' + cur.points.map(t => '<li>' + t + '</li>').join('') + '</ul>' : '<p class="small muted">Сейчас открыт ваш собственный проект. Выберите вариант, чтобы сравнить (текущий можно вернуть кнопкой «Отменить» на вкладке «Расстановка»).</p>';
   }
-  async function pickVariant(v) {
+  async function pickVariant(v, quiet) {
     const np = await (await fetch(v.file, { cache: 'no-store' })).json();
     np.facade = P && P.facade ? P.facade : np.facade; // разметка фото фасада общая
     undo.push(snap()); redo = []; updUndo();
     P = np; save(); scene.setInterior(P.interior || 'grib-color'); scene.build(P); rebuildPresets(); plan.setProject(P); setName(); renderVariants();
-    const vw = scene.views().find(x => x.id === 'x0') || scene.views().find(x => x.id === 'door'); if (vw) { curView = vw.id; scene.go(vw); markPreset(); }
-    toast(v.name + ' — открыт');
+    const vw = (P.startView && scene.views().find(x => x.name === P.startView)) || scene.views().find(x => x.id === 'x0') || scene.views().find(x => x.id === 'door'); if (vw) { curView = vw.id; scene.go(vw, !!quiet); markPreset(); }
+    if (!quiet) toast(v.name + ' — открыт');
   }
   function startWalk() { if (tab !== 'views' && tab !== 'edit') showTab('views'); scene.walkStart(); }
   $('#bWalk').onclick = startWalk; $('#bWalk2').onclick = startWalk;
