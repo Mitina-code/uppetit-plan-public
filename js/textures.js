@@ -284,6 +284,30 @@
     for (let i = 0; i < n; i++) { const c = cols[(i + k) % 4]; g.fillStyle = c; g.fillRect(0, i * bh, w, bh + 1); face(g, w / 2, i * bh + bh / 2, Math.min(w * 0.36, bh * 0.3), i % 2 ? '#FFFFFF' : shade(c, 1.25)); }
     g.save(); g.translate(w * 0.5, h * 0.5); g.rotate(-Math.PI / 2); g.globalAlpha = 0.0; g.restore();
   };
+  // коробка поставки: гофрокартон, скотч, этикетка
+  S.boxes = (g, w, h) => { srand(43); g.fillStyle = '#C8A06A'; g.fillRect(0, 0, w, h); noise(g, w, h, 0.08, 0, 2); g.fillStyle = 'rgba(255,255,255,.35)'; g.fillRect(w * 0.44, 0, w * 0.12, h); g.fillStyle = '#fff'; g.fillRect(w * 0.12, h * 0.55, w * 0.28, h * 0.25); g.fillStyle = '#333'; for (let k = 0; k < 3; k++) g.fillRect(w * 0.15, h * (0.6 + k * 0.06), w * 0.2, 2); g.strokeStyle = 'rgba(90,60,30,.35)'; g.lineWidth = 3; g.strokeRect(1.5, 1.5, w - 3, h - 3); };
+  // ростовая фигура: белый гусь с оранжевым клювом показывает крылом вправо, табличка с надписью
+  S.goose = (g, w, h, o) => {
+    g.clearRect(0, 0, w, h); const t = (o && o.text) || 'здесь тоже есть места';
+    const cx = w * 0.42, ink = '#1E2124', beak = '#F39200';
+    g.lineWidth = Math.max(3, w * 0.012); g.strokeStyle = ink; g.lineJoin = 'round';
+    // лапы
+    g.fillStyle = beak; [[cx - w * 0.08, h * 0.93], [cx + w * 0.07, h * 0.93]].forEach(([x, y]) => { g.beginPath(); g.moveTo(x, y - h * 0.08); g.lineTo(x - w * 0.07, y + h * 0.04); g.lineTo(x + w * 0.07, y + h * 0.04); g.closePath(); g.fill(); g.stroke(); });
+    // тело
+    g.fillStyle = '#FFFFFF'; g.beginPath(); g.ellipse(cx, h * 0.68, w * 0.26, h * 0.2, 0, 0, 7); g.fill(); g.stroke();
+    // шея и голова
+    g.beginPath(); g.moveTo(cx - w * 0.07, h * 0.52); g.quadraticCurveTo(cx - w * 0.1, h * 0.32, cx - w * 0.02, h * 0.2); g.lineTo(cx + w * 0.1, h * 0.22); g.quadraticCurveTo(cx + w * 0.06, h * 0.36, cx + w * 0.09, h * 0.52); g.closePath(); g.fill(); g.stroke();
+    g.beginPath(); g.ellipse(cx + w * 0.03, h * 0.17, w * 0.1, h * 0.07, 0, 0, 7); g.fill(); g.stroke();
+    g.fillStyle = beak; g.beginPath(); g.moveTo(cx + w * 0.11, h * 0.15); g.lineTo(cx + w * 0.24, h * 0.18); g.lineTo(cx + w * 0.11, h * 0.21); g.closePath(); g.fill(); g.stroke();
+    g.fillStyle = ink; g.beginPath(); g.arc(cx + w * 0.06, h * 0.15, w * 0.016, 0, 7); g.fill();
+    // крыло-указатель вправо
+    g.fillStyle = '#F4F4F2'; g.beginPath(); g.moveTo(cx + w * 0.05, h * 0.6); g.quadraticCurveTo(cx + w * 0.3, h * 0.5, cx + w * 0.55, h * 0.47); g.lineTo(cx + w * 0.5, h * 0.53); g.quadraticCurveTo(cx + w * 0.3, h * 0.6, cx + w * 0.12, h * 0.7); g.closePath(); g.fill(); g.stroke();
+    // табличка
+    const bx = w * 0.04, by = h * 0.3, bw = w * 0.92, bh = h * 0.0;
+    g.fillStyle = '#F39200'; rr(g, w * 0.03, h * 0.015, w * 0.94, h * 0.1, h * 0.02); g.fill();
+    let fs = h * 0.035; g.font = '700 ' + fs + 'px "Golos Text", Arial'; while (g.measureText(t + ' →').width > w * 0.88 && fs > 8) { fs -= 1; g.font = '700 ' + fs + 'px "Golos Text", Arial'; }
+    g.fillStyle = '#fff'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(t + ' →', w / 2, h * 0.065);
+  };
   // мягкое свечение вокруг лампы
   let haloT = null;
   function halo(T) { if (haloT) return haloT; const c = cv(64, 64), g = c.getContext('2d'); const gr = g.createRadialGradient(32, 32, 2, 32, 32, 32); gr.addColorStop(0, 'rgba(255,255,255,.9)'); gr.addColorStop(0.25, 'rgba(255,220,160,.35)'); gr.addColorStop(1, 'rgba(255,200,120,0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); haloT = new T.CanvasTexture(c); return haloT; }

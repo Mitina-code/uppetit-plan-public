@@ -130,3 +130,12 @@ input[type=number]{width:84px;border:1px solid var(--line);background:var(--pane
 
 /* скрытое — всегда скрыто (иначе display:flex у слоёв перекрывает атрибут hidden) */
 [hidden]{display:none!important}
+
+.varbar{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin:0 20px 12px;padding:8px 10px;background:var(--panel);border:1px solid var(--line);border-radius:12px}
+.varbar-l{font-weight:600;font-size:14px}
+.varbar-c{display:flex;flex-wrap:wrap;gap:6px;flex:1}
+.varchip{border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:13.5px;padding:6px 11px;border-radius:999px;cursor:pointer;text-align:left}
+.varchip[aria-checked="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.varwhy{margin:-4px 20px 12px;padding:10px 14px;background:var(--panel);border:1px solid var(--line);border-radius:12px;font-size:14px}
+.varwhy ul{margin:6px 0 0;padding-left:18px}.varwhy li{margin:3px 0}
+@media (max-width:900px){.varbar{margin:0 16px 10px}.varwhy{margin:-4px 16px 10px}}

@@ -54,6 +54,8 @@
     { id: 'stripe', n: 34, cat: 'decor', name: 'Цветная полоса на полу', W: 4.00, D: 0.30, H: 0.01, custom: { w: [0.5, 15] }, model: 'stripe', src: 'навигация цветом, как зоны Uppetit', note: 'Ведёт гостя к посадке. Длина любая.' },
     { id: 'plant', n: 35, cat: 'decor', name: 'Растение в кашпо', W: 0.50, D: 0.50, H: 1.30, model: 'plant', src: 'зелень в залах Uppetit', note: '' },
     { id: 'longtable', n: 37, cat: 'seat', name: 'Общий длинный стол', W: 2.40, D: 0.80, H: 0.75, custom: { w: [1.2, 5] }, model: 'longtable', src: 'общий стол в нише (как у Din Tai Fung)', note: 'Заказной: длина под компанию. Светлое дерево, чёрные опоры.' },
+    { id: 'delivery', n: 40, cat: 'prod', name: 'Поставка: паллет с коробками', W: 1.20, D: 0.80, H: 1.20, model: 'delivery', src: 'место под приёмку поставки', note: 'Европаллет 1200×800 с коробками — сколько места займёт привоз.' },
+    { id: 'standee', n: 41, cat: 'decor', name: 'Ростовая фигура гуся с указателем', W: 0.80, D: 0.35, H: 1.75, model: 'standee', text: true, src: 'фирменный гусь Uppetit с постеров в залах', note: 'Показывает крылом, где ещё есть места. Надпись меняется.' },
     { id: 'aframe', n: 39, cat: 'decor', name: 'Штендер у входа', W: 0.60, D: 0.55, H: 1.05, model: 'aframe', src: 'штендер у входа в Uppetit (фото с Манчестерской)', note: 'Ставится на улице у двери: меню и цены видно прохожим.' },
     { id: 'pendant', n: 36, cat: 'decor', name: 'Подвесная лампа-«груша»', W: 0.20, D: 0.20, H: 3.40, model: 'pendant', src: 'свет в залах Uppetit', note: 'Висит над столом; низ лампы на 1,9 м.' }
   );
@@ -97,6 +99,17 @@
       [-1, 1].forEach(s => { const l = new T.Mesh(new T.BoxGeometry(0.05, 1.01, 0.05), blk); l.position.set(s * (d.W / 2 - 0.12), 0.505, 0); g.add(l); const f = new T.Mesh(new T.BoxGeometry(0.05, 0.03, d.D * 0.9), blk); f.position.set(s * (d.W / 2 - 0.12), 0.015, 0); g.add(f); });
     } else if (t.model === 'trash') {
       const m = M('#3B4045', { roughness: 0.5, metalness: 0.3 }); const c = new T.Mesh(new T.CylinderGeometry(0.17, 0.15, 0.62, 24), m); c.position.y = 0.31; g.add(c); const l = new T.Mesh(new T.CylinderGeometry(0.18, 0.18, 0.04, 24), M('#9AA1A7', { metalness: 0.6, roughness: 0.3 })); l.position.y = 0.64; g.add(l);
+    } else if (t.model === 'delivery') {
+      const pal = new T.MeshStandardMaterial({ map: U.tex(T, 'wood', 1.2, 0.8), roughness: 0.8 });
+      [-0.55, 0, 0.55].forEach(x => { const b = new T.Mesh(new T.BoxGeometry(0.1, 0.1, 0.8), pal); b.position.set(x, 0.05, 0); g.add(b); });
+      const top = new T.Mesh(new T.BoxGeometry(1.2, 0.03, 0.8), pal); top.position.y = 0.115; g.add(top);
+      const bm = new T.MeshStandardMaterial({ map: U.tex(T, 'boxes', 0.4, 0.3), roughness: 0.9 });
+      for (let k = 0; k < 3; k++) for (let i = 0; i < 3; i++) for (let j = 0; j < 2; j++) { if (k === 2 && (i + j) % 2) continue; const b = new T.Mesh(new T.BoxGeometry(0.38, 0.33, 0.38), bm); b.position.set(-0.4 + i * 0.4, 0.13 + 0.165 + k * 0.34, -0.2 + j * 0.4); b.rotation.y = ((i * 3 + j + k) % 3 - 1) * 0.04; g.add(b); }
+    } else if (t.model === 'standee') {
+      const fig = new T.Mesh(new T.PlaneGeometry(d.W, d.H), new T.MeshStandardMaterial({ map: U.tex(T, 'goose', d.W, d.H, { text: it.text || 'здесь тоже есть места' }), transparent: true, alphaTest: 0.1, side: T.DoubleSide, roughness: 0.6 }));
+      fig.position.set(0, d.H / 2 + 0.03, 0); g.add(fig);
+      const base = new T.Mesh(new T.BoxGeometry(0.5, 0.03, 0.3), M('#1E2124')); base.position.y = 0.015; g.add(base);
+      const leg = new T.Mesh(new T.BoxGeometry(0.03, 0.6, 0.03), M('#1E2124')); leg.position.set(0, 0.3, -0.1); leg.rotation.x = 0.25; g.add(leg);
     } else if (t.model === 'aframe') {
       const face = new T.MeshStandardMaterial({ map: U.tex(T, 'aframe', 0.56, 0.95), roughness: 0.6 }), fr = M('#1E2124', { roughness: 0.5 });
       [1, -1].forEach(s0 => { const b = new T.Group(); const p = new T.Mesh(new T.BoxGeometry(0.6, 1.0, 0.025), [fr, fr, fr, fr, s0 > 0 ? face : fr, s0 > 0 ? fr : face]); p.position.y = 0.5; b.add(p); b.position.z = s0 * 0.14; b.rotation.x = -s0 * 0.27; g.add(b); });

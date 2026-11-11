@@ -334,6 +334,10 @@
     renderVariants();
   }
   function renderVariants() {
+    // полоса наверху страницы: выбор варианта на любой вкладке
+    const bar = $('#varBar'); if (bar) { bar.innerHTML = ''; variants.forEach(v => { const b = document.createElement('button'); b.className = 'varchip'; b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', P && P.variant === v.id ? 'true' : 'false'); b.textContent = v.name; b.title = v.summary || ''; b.onclick = () => pickVariant(v); bar.appendChild(b); }); }
+    const curV = variants.find(v => P && v.id === P.variant), why = $('#varWhyBox');
+    if (why) why.innerHTML = curV ? '<b>' + curV.name + '</b><ul>' + curV.points.map(t => '<li>' + t + '</li>').join('') + '</ul>' : '<span class="muted">Открыт ваш собственный проект (не из списка вариантов).</span>';
     const box = $('#varList'); if (!box) return; box.innerHTML = '';
     variants.forEach(v => { const b = document.createElement('button'); b.className = 'varbtn'; b.setAttribute('aria-pressed', P && P.variant === v.id ? 'true' : 'false'); b.innerHTML = '<b>' + v.name + '</b><span>' + v.summary + '</span>'; b.onclick = () => pickVariant(v); box.appendChild(b); });
     const cur = variants.find(v => P && v.id === P.variant);
@@ -346,8 +350,10 @@
     P = np; save(); scene.setInterior(P.interior || 'grib-color'); scene.build(P); rebuildPresets(); plan.setProject(P); setName(); renderVariants();
     const vw = (P.startView && scene.views().find(x => x.name === P.startView)) || scene.views().find(x => x.id === 'x0') || scene.views().find(x => x.id === 'door'); if (vw) { curView = vw.id; scene.go(vw, !!quiet); markPreset(); }
     if (!quiet) toast(v.name + ' — открыт');
+    if (tab === 'facade') facade.sync(); if (tab === 'compare') buildCompare(); if (tab === 'interior') buildInteriors(); if (tab === 'pdf') { pdfPlan.setProject(P); }
   }
   function startWalk() { if (tab !== 'views' && tab !== 'edit') showTab('views'); scene.walkStart(); }
+  $('#varWhy').onclick = e => { const w = $('#varWhyBox'); w.hidden = !w.hidden; e.currentTarget.setAttribute('aria-expanded', String(!w.hidden)); };
   $('#bWalk').onclick = startWalk; $('#bWalk2').onclick = startWalk;
   $('#bTour').onclick = () => { if (tab !== 'views') showTab('views'); const path = P.tour; if (!path) { toast('Для этого проекта маршрута нет — включаю прогулку'); return scene.walkStart(); } scene.tour(path); };
   scene.onWalk(on => { v3d.classList.toggle('walking', on); $('#bWalk').textContent = on ? 'Идёт прогулка' : 'Прогулка'; });
@@ -405,6 +411,7 @@
   let underlay = null;
   (async function init() {
     P = await S.get('project');
+    if (!P || P.version !== 2) { try { const list = await (await fetch('data/variants.json', { cache: 'no-store' })).json(); P = await (await fetch(list[0].file, { cache: 'no-store' })).json(); } catch (e) { P = null; } }
     if (!P || P.version !== 2) { try { P = await loadDemo(); } catch (e) { P = { version: 2, name: 'Пустой проект', walls: [], openings: [], items: [], bounds: { w: 10, h: 10 }, facadeY: 10 }; } }
     await loadUserPhotos();
     scene.setInterior(P.interior || 'manch-coffee');
